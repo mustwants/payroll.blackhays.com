@@ -1,7 +1,7 @@
 import { useState, useContext } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
-import { FiHome, FiUsers, FiDollarSign, FiBarChart2, FiSettings, FiMenu, FiX, FiLogOut, FiClock, FiAddressBook } from 'react-icons/fi';
+import { FiHome, FiUsers, FiDollarSign, FiBarChart2, FiSettings, FiMenu, FiX, FiLogOut, FiClock, FiBook } from 'react-icons/fi';
 
 const DashboardLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -30,7 +30,7 @@ const DashboardLayout = () => {
   const employeeNavItems = [
     { path: '/', label: 'Dashboard', icon: <FiHome size={20} /> },
     { path: '/time-tracking', label: 'Time Tracking', icon: <FiClock size={20} /> },
-    { path: '/crm-contacts', label: 'CRM Contacts', icon: <FiAddressBook size={20} /> },
+    { path: '/crm-contacts', label: 'CRM Contacts', icon: <FiBook size={20} /> },
   ];
 
   // Select navigation items based on user role
