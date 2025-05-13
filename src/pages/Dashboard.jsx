@@ -102,56 +102,56 @@ const Dashboard = () => {
   // Render different dashboards based on user role
   return (
     <div className="animate-fade-in">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">
+      <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">
         Welcome, {currentUser?.name}
       </h1>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {/* Dashboard Cards */}
-        <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-primary-500">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border-l-4 border-primary-500">
           <div className="flex items-center">
-            <div className="p-3 rounded-full bg-primary-100 text-primary-600 mr-4">
+            <div className="p-3 rounded-full bg-primary-100 dark:bg-primary-900 text-primary-600 dark:text-primary-300 mr-4">
               <FiUser size={24} />
             </div>
             <div>
-              <p className="text-sm text-gray-500 uppercase">Profile</p>
-              <p className="text-lg font-semibold">{userRole === 'admin' ? 'Administrator' : 'Employee'}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 uppercase">Profile</p>
+              <p className="text-lg font-semibold text-gray-900 dark:text-white">{userRole === 'admin' ? 'Administrator' : 'Employee'}</p>
             </div>
           </div>
         </div>
         
-        <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-green-500">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border-l-4 border-green-500">
           <div className="flex items-center">
-            <div className="p-3 rounded-full bg-green-100 text-green-600 mr-4">
+            <div className="p-3 rounded-full bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300 mr-4">
               <FiClock size={24} />
             </div>
             <div>
-              <p className="text-sm text-gray-500 uppercase">Hours This Month</p>
-              <p className="text-lg font-semibold">{totalHours.toFixed(2)}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 uppercase">Hours This Month</p>
+              <p className="text-lg font-semibold text-gray-900 dark:text-white">{totalHours.toFixed(2)}</p>
             </div>
           </div>
         </div>
         
-        <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-purple-500">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border-l-4 border-purple-500">
           <div className="flex items-center">
-            <div className="p-3 rounded-full bg-purple-100 text-purple-600 mr-4">
+            <div className="p-3 rounded-full bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 mr-4">
               <FiBriefcase size={24} />
             </div>
             <div>
-              <p className="text-sm text-gray-500 uppercase">Active Clients</p>
-              <p className="text-lg font-semibold">{clientSummary.length}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 uppercase">Active Clients</p>
+              <p className="text-lg font-semibold text-gray-900 dark:text-white">{clientSummary.length}</p>
             </div>
           </div>
         </div>
         
-        <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-yellow-500">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border-l-4 border-yellow-500">
           <div className="flex items-center">
-            <div className="p-3 rounded-full bg-yellow-100 text-yellow-600 mr-4">
+            <div className="p-3 rounded-full bg-yellow-100 dark:bg-yellow-900 text-yellow-600 dark:text-yellow-300 mr-4">
               <FiCalendar size={24} />
             </div>
             <div>
-              <p className="text-sm text-gray-500 uppercase">Current Month</p>
-              <p className="text-lg font-semibold">{format(new Date(), 'MMMM yyyy')}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 uppercase">Current Month</p>
+              <p className="text-lg font-semibold text-gray-900 dark:text-white">{format(new Date(), 'MMMM yyyy')}</p>
             </div>
           </div>
         </div>
@@ -161,73 +161,73 @@ const Dashboard = () => {
       {userRole === 'admin' ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Admin Dashboard */}
-          <Card title="Hours by Client" className="bg-white p-6 rounded-lg shadow-md">
+          <Card title="Hours by Client" className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
             <div className="space-y-3">
               {clientSummary.length > 0 ? (
                 clientSummary.map((client) => (
-                  <div key={client.id} className="flex justify-between pb-3 border-b border-gray-100">
+                  <div key={client.id} className="flex justify-between pb-3 border-b border-gray-100 dark:border-gray-700">
                     <div>
-                      <p className="text-sm font-medium">{client.name}</p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">{client.name}</p>
                     </div>
                     <div>
-                      <span className="bg-primary-100 text-primary-800 text-xs font-semibold px-2 py-1 rounded">
+                      <span className="bg-primary-100 dark:bg-primary-900 text-primary-800 dark:text-primary-300 text-xs font-semibold px-2 py-1 rounded">
                         {client.hours.toFixed(2)} hours
                       </span>
                     </div>
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-gray-500">No time entries recorded this month.</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">No time entries recorded this month.</p>
               )}
             </div>
           </Card>
           
-          <Card title="Hours by Employee" className="bg-white p-6 rounded-lg shadow-md">
+          <Card title="Hours by Employee" className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
             <div className="space-y-3">
               {employeeSummary.length > 0 ? (
                 employeeSummary.map((employee) => (
-                  <div key={employee.id} className="flex justify-between pb-3 border-b border-gray-100">
+                  <div key={employee.id} className="flex justify-between pb-3 border-b border-gray-100 dark:border-gray-700">
                     <div>
-                      <p className="text-sm font-medium">{employee.name}</p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">{employee.name}</p>
                     </div>
                     <div>
-                      <span className="bg-primary-100 text-primary-800 text-xs font-semibold px-2 py-1 rounded">
+                      <span className="bg-primary-100 dark:bg-primary-900 text-primary-800 dark:text-primary-300 text-xs font-semibold px-2 py-1 rounded">
                         {employee.hours.toFixed(2)} hours
                       </span>
                     </div>
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-gray-500">No time entries recorded this month.</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">No time entries recorded this month.</p>
               )}
             </div>
           </Card>
           
           <Card title="Recent Time Entries" className="lg:col-span-2">
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-800">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hours</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notes</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Employee</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Client</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Hours</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Notes</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                   {timeEntries.slice(0, 5).map((entry, index) => (
                     <tr key={entry.id || index}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">{entry.date}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">{entry.userName || 'Unknown'}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">{entry.clientName || 'Unknown'}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">{parseFloat(entry.hours).toFixed(2)}</td>
-                      <td className="px-6 py-4 text-sm">{entry.notes || '-'}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{entry.date}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{entry.userName || 'Unknown'}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{entry.clientName || 'Unknown'}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{parseFloat(entry.hours).toFixed(2)}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">{entry.notes || '-'}</td>
                     </tr>
                   ))}
                   {timeEntries.length === 0 && (
                     <tr>
-                      <td colSpan="5" className="px-6 py-4 text-center text-sm text-gray-500">
+                      <td colSpan="5" className="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
                         No time entries found for this month.
                       </td>
                     </tr>
@@ -240,42 +240,42 @@ const Dashboard = () => {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Employee Dashboard */}
-          <Card title="Your Time by Client" className="bg-white p-6 rounded-lg shadow-md">
+          <Card title="Your Time by Client" className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
             <div className="space-y-3">
               {clientSummary.length > 0 ? (
                 clientSummary.map((client) => (
-                  <div key={client.id} className="flex justify-between pb-3 border-b border-gray-100">
+                  <div key={client.id} className="flex justify-between pb-3 border-b border-gray-100 dark:border-gray-700">
                     <div>
-                      <p className="text-sm font-medium">{client.name}</p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">{client.name}</p>
                     </div>
                     <div>
-                      <span className="bg-primary-100 text-primary-800 text-xs font-semibold px-2 py-1 rounded">
+                      <span className="bg-primary-100 dark:bg-primary-900 text-primary-800 dark:text-primary-300 text-xs font-semibold px-2 py-1 rounded">
                         {client.hours.toFixed(2)} hours
                       </span>
                     </div>
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-gray-500">You haven't recorded any time this month.</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">You haven't recorded any time this month.</p>
               )}
             </div>
           </Card>
           
-          <Card title="Recent Time Entries" className="bg-white p-6 rounded-lg shadow-md">
+          <Card title="Recent Time Entries" className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-800">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hours</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Client</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Hours</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                   {timeEntries.slice(0, 5).map((entry, index) => (
                     <tr key={entry.id || index}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">{entry.date}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{entry.date}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                         {entry.clientName || 
                           (entry.clientId === '1' ? 'Acme Corporation' :
                           entry.clientId === '2' ? 'Globex Industries' :
@@ -283,12 +283,12 @@ const Dashboard = () => {
                           entry.clientId === '4' ? 'Stark Industries' :
                           entry.clientId === '5' ? 'Umbrella Corporation' : 'Unknown')}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">{parseFloat(entry.hours).toFixed(2)}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{parseFloat(entry.hours).toFixed(2)}</td>
                     </tr>
                   ))}
                   {timeEntries.length === 0 && (
                     <tr>
-                      <td colSpan="3" className="px-6 py-4 text-center text-sm text-gray-500">
+                      <td colSpan="3" className="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
                         You haven't recorded any time this month.
                       </td>
                     </tr>
