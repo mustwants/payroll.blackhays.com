@@ -1,9 +1,13 @@
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
-import { FiDownload, FiBarChart2, FiPieChart, FiTrendingUp } from 'react-icons/fi';
+import { FiDownload, FiBarChart2, FiPieChart, FiTrendingUp, FiFilter, FiCalendar, FiUsers, FiBriefcase } from 'react-icons/fi';
 import Button from '../components/ui/Button';
+import Card from '../components/ui/Card';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title, PointElement, LineElement } from 'chart.js';
 import { Bar, Pie, Line } from 'react-chartjs-2';
+import { jsPDF } from 'jspdf';
+import 'jspdf-autotable';
+import { format } from 'date-fns';
 
 // Register ChartJS components
 ChartJS.register(
@@ -33,379 +37,457 @@ const Reports = () => {
     );
   }
   
-  const [reportType, setReportType] = useState('payroll');
+  const [reportType, setReportType] = useState('timeTracking');
+  const [selectedMonth, setSelectedMonth] = useState(format(new Date(), 'yyyy-MM'));
+  const [selectedClient, setSelectedClient] = useState('');
+  const [selectedEmployee, setSelectedEmployee] = useState('');
+  const [timeEntries, setTimeEntries] = useState([]);
   
-  // Department distribution chart data
-  const departmentData = {
-    labels: ['Engineering', 'Marketing', 'Sales', 'Design', 'Finance', 'HR'],
-    datasets: [
-      {
-        label: 'Employees by Department',
-        data: [12, 7, 9, 5, 4, 3],
-        backgroundColor: [
-          'rgba(255, 99, 132, 0.6)',
-          'rgba(54, 162, 235, 0.6)',
-          'rgba(255, 206, 86, 0.6)',
-          'rgba(75, 192, 192, 0.6)',
-          'rgba(153, 102, 255, 0.6)',
-          'rgba(255, 159, 64, 0.6)',
-        ],
-        borderColor: [
-          'rgba(255, 99, 132, 1)',
-          'rgba(54, 162, 235, 1)',
-          'rgba(255, 206, 86, 1)',
-          'rgba(75, 192, 192, 1)',
-          'rgba(153, 102, 255, 1)',
-          'rgba(255, 159, 64, 1)',
-        ],
-        borderWidth: 1,
-      },
-    ],
+  // Employee list
+  const [employees, setEmployees] = useState([
+    { id: '1', name: 'John Smith' },
+    { id: '2', name: 'Lisa Johnson' },
+    { id: '3', name: 'Michael Brown' },
+    { id: '4', name: 'Sarah Wilson' },
+    { id: '5', name: 'David Lee' },
+  ]);
+  
+  // Client list
+  const [clients, setClients] = useState([
+    { id: '1', name: 'Acme Corporation' },
+    { id: '2', name: 'Globex Industries' },
+    { id: '3', name: 'Wayne Enterprises' },
+    { id: '4', name: 'Stark Industries' },
+    { id: '5', name: 'Umbrella Corporation' },
+  ]);
+  
+  // Load time entries from localStorage
+  useEffect(() => {
+    const allEntries = JSON.parse(localStorage.getItem('allTimeEntries') || '[]');
+    setTimeEntries(allEntries);
+  }, []);
+  
+  // Filter entries by month, client, and employee
+  const filteredEntries = timeEntries.filter(entry => {
+    const matchesMonth = entry.date && entry.date.startsWith(selectedMonth);
+    const matchesClient = !selectedClient || entry.clientId === selectedClient;
+    const matchesEmployee = !selectedEmployee || entry.userId === selectedEmployee;
+    
+    return matchesMonth && matchesClient && matchesEmployee;
+  });
+  
+  // Prepare data for client distribution chart
+  const prepareClientData = () => {
+    const clientHours = {};
+    const clientColors = [
+      'rgba(255, 99, 132, 0.6)',
+      'rgba(54, 162, 235, 0.6)',
+      'rgba(255, 206, 86, 0.6)',
+      'rgba(75, 192, 192, 0.6)',
+      'rgba(153, 102, 255, 0.6)',
+      'rgba(255, 159, 64, 0.6)',
+    ];
+    
+    clients.forEach(client => {
+      clientHours[client.id] = 0;
+    });
+    
+    filteredEntries.forEach(entry => {
+      if (entry.clientId && entry.hours) {
+        clientHours[entry.clientId] = (clientHours[entry.clientId] || 0) + parseFloat(entry.hours);
+      }
+    });
+    
+    return {
+      labels: clients.map(client => client.name),
+      datasets: [
+        {
+          label: 'Hours by Client',
+          data: clients.map(client => clientHours[client.id] || 0),
+          backgroundColor: clientColors,
+          borderColor: clientColors.map(color => color.replace('0.6', '1')),
+          borderWidth: 1,
+        },
+      ],
+    };
   };
   
-  // Payroll monthly chart data
-  const payrollData = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-    datasets: [
-      {
-        label: 'Monthly Payroll ($)',
-        data: [142000, 135000, 138000, 150000, 148000, 152000, 155000, 158000, 162000, 160000, 165000, 170000],
-        backgroundColor: 'rgba(54, 162, 235, 0.5)',
-        borderColor: 'rgba(54, 162, 235, 1)',
-        borderWidth: 1,
-      },
-    ],
+  // Prepare data for employee distribution chart
+  const prepareEmployeeData = () => {
+    const employeeHours = {};
+    const employeeColors = [
+      'rgba(75, 192, 192, 0.6)',
+      'rgba(54, 162, 235, 0.6)',
+      'rgba(255, 206, 86, 0.6)',
+      'rgba(255, 99, 132, 0.6)',
+      'rgba(153, 102, 255, 0.6)',
+    ];
+    
+    employees.forEach(employee => {
+      employeeHours[employee.id] = 0;
+    });
+    
+    filteredEntries.forEach(entry => {
+      if (entry.userId && entry.hours) {
+        employeeHours[entry.userId] = (employeeHours[entry.userId] || 0) + parseFloat(entry.hours);
+      }
+    });
+    
+    return {
+      labels: employees.map(employee => employee.name),
+      datasets: [
+        {
+          label: 'Hours by Employee',
+          data: employees.map(employee => employeeHours[employee.id] || 0),
+          backgroundColor: employeeColors,
+          borderColor: employeeColors.map(color => color.replace('0.6', '1')),
+          borderWidth: 1,
+        },
+      ],
+    };
   };
   
-  // Hours worked chart data
-  const hoursData = {
-    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6', 'Week 7', 'Week 8'],
-    datasets: [
-      {
-        label: 'Regular Hours',
-        data: [1520, 1540, 1570, 1560, 1580, 1550, 1590, 1600],
-        backgroundColor: 'rgba(75, 192, 192, 0.5)',
-        borderColor: 'rgba(75, 192, 192, 1)',
-        tension: 0.4,
-      },
-      {
-        label: 'Overtime Hours',
-        data: [120, 115, 145, 110, 135, 95, 125, 150],
-        backgroundColor: 'rgba(255, 206, 86, 0.5)',
-        borderColor: 'rgba(255, 206, 86, 1)',
-        tension: 0.4,
-      },
-    ],
+  // Generate detailed client summary
+  const generateClientSummary = () => {
+    const clientSummary = clients.map(client => {
+      const clientEntries = filteredEntries.filter(entry => entry.clientId === client.id);
+      const totalHours = clientEntries.reduce((sum, entry) => sum + (parseFloat(entry.hours) || 0), 0);
+      
+      // Calculate hours by employee for this client
+      const employeeHours = {};
+      clientEntries.forEach(entry => {
+        if (entry.userId && entry.hours) {
+          employeeHours[entry.userId] = (employeeHours[entry.userId] || 0) + parseFloat(entry.hours);
+        }
+      });
+      
+      return {
+        ...client,
+        totalHours,
+        employeeHours,
+      };
+    }).filter(client => client.totalHours > 0);
+    
+    return clientSummary;
   };
+  
+  // Generate detailed employee summary
+  const generateEmployeeSummary = () => {
+    const employeeSummary = employees.map(employee => {
+      const employeeEntries = filteredEntries.filter(entry => entry.userId === employee.id);
+      const totalHours = employeeEntries.reduce((sum, entry) => sum + (parseFloat(entry.hours) || 0), 0);
+      
+      // Calculate hours by client for this employee
+      const clientHours = {};
+      employeeEntries.forEach(entry => {
+        if (entry.clientId && entry.hours) {
+          clientHours[entry.clientId] = (clientHours[entry.clientId] || 0) + parseFloat(entry.hours);
+        }
+      });
+      
+      return {
+        ...employee,
+        totalHours,
+        clientHours,
+      };
+    }).filter(employee => employee.totalHours > 0);
+    
+    return employeeSummary;
+  };
+  
+  // Export report to PDF
+  const exportToPdf = () => {
+    const doc = new jsPDF();
+    
+    // Add title
+    doc.setFontSize(18);
+    doc.text('Time Tracking Report', 14, 22);
+    
+    doc.setFontSize(12);
+    doc.text(`Period: ${format(new Date(selectedMonth + '-01'), 'MMMM yyyy')}`, 14, 30);
+    
+    if (selectedClient) {
+      const client = clients.find(c => c.id === selectedClient);
+      doc.text(`Client: ${client ? client.name : 'Unknown'}`, 14, 38);
+    }
+    
+    if (selectedEmployee) {
+      const employee = employees.find(e => e.id === selectedEmployee);
+      doc.text(`Employee: ${employee ? employee.name : 'Unknown'}`, 14, selectedClient ? 46 : 38);
+    }
+    
+    // Create table for time entries
+    const tableData = filteredEntries.map(entry => [
+      entry.date,
+      entry.userName || 'Unknown',
+      entry.clientName || 'Unknown',
+      parseFloat(entry.hours).toFixed(2),
+      entry.notes || ''
+    ]);
+    
+    if (tableData.length > 0) {
+      doc.autoTable({
+        startY: selectedClient || selectedEmployee ? 54 : 38,
+        head: [['Date', 'Employee', 'Client', 'Hours', 'Notes']],
+        body: tableData,
+      });
+    } else {
+      doc.text('No time entries found for the selected filters.', 14, 54);
+    }
+    
+    // Save the PDF
+    doc.save(`time-report-${selectedMonth}.pdf`);
+  };
+  
+  // Prepare data for client and employee charts
+  const clientData = prepareClientData();
+  const employeeData = prepareEmployeeData();
+  
+  // Summary totals
+  const totalHours = filteredEntries.reduce((sum, entry) => sum + (parseFloat(entry.hours) || 0), 0);
+  const totalEntries = filteredEntries.length;
+  const uniqueClients = [...new Set(filteredEntries.map(entry => entry.clientId))].filter(Boolean).length;
+  const uniqueEmployees = [...new Set(filteredEntries.map(entry => entry.userId))].filter(Boolean).length;
   
   return (
     <div className="animate-fade-in">
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800 mb-4 md:mb-0">Reports & Analytics</h1>
+        <h1 className="text-2xl font-bold text-gray-800 mb-4 md:mb-0">Time Tracking Reports</h1>
         
         <div className="flex flex-col sm:flex-row gap-2">
-          <select
-            value={reportType}
-            onChange={(e) => setReportType(e.target.value)}
-            className="block w-full sm:w-auto pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md"
-          >
-            <option value="payroll">Payroll Reports</option>
-            <option value="departments">Department Reports</option>
-            <option value="hours">Hours Reports</option>
-          </select>
-          
           <Button 
-            variant="primary"
+            variant="outline"
+            onClick={exportToPdf}
             className="inline-flex items-center"
           >
-            <FiDownload className="mr-2" /> Export Report
+            <FiDownload className="mr-2" /> Export PDF
           </Button>
         </div>
       </div>
       
-      {reportType === 'departments' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <h2 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-              <FiPieChart className="mr-2 text-primary-600" /> Department Distribution
-            </h2>
-            <div className="h-80">
-              <Pie data={departmentData} options={{ maintainAspectRatio: false }} />
-            </div>
+      <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label htmlFor="month" className="block text-sm font-medium text-gray-700 mb-1">
+              <FiCalendar className="inline mr-1" /> Month
+            </label>
+            <select
+              id="month"
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+              className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md"
+            >
+              {Array.from({ length: 12 }, (_, i) => {
+                const date = new Date(new Date().getFullYear(), i, 1);
+                return (
+                  <option 
+                    key={i} 
+                    value={format(date, 'yyyy-MM')}
+                  >
+                    {format(date, 'MMMM yyyy')}
+                  </option>
+                );
+              })}
+            </select>
           </div>
           
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">Department Statistics</h2>
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Employees</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Avg. Salary</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Cost</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                <tr>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Engineering</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">12</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">$85,000</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">$1,020,000</td>
-                </tr>
-                <tr>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Marketing</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">7</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">$75,000</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">$525,000</td>
-                </tr>
-                <tr>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Sales</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">9</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">$78,000</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">$702,000</td>
-                </tr>
-                <tr>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Design</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">5</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">$72,000</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">$360,000</td>
-                </tr>
-                <tr>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Finance</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">4</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">$80,000</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">$320,000</td>
-                </tr>
-                <tr>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">HR</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">3</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">$70,000</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">$210,000</td>
-                </tr>
-              </tbody>
-            </table>
+          <div>
+            <label htmlFor="client" className="block text-sm font-medium text-gray-700 mb-1">
+              <FiBriefcase className="inline mr-1" /> Client
+            </label>
+            <select
+              id="client"
+              value={selectedClient}
+              onChange={(e) => setSelectedClient(e.target.value)}
+              className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md"
+            >
+              <option value="">All Clients</option>
+              {clients.map(client => (
+                <option key={client.id} value={client.id}>
+                  {client.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          
+          <div>
+            <label htmlFor="employee" className="block text-sm font-medium text-gray-700 mb-1">
+              <FiUsers className="inline mr-1" /> Employee
+            </label>
+            <select
+              id="employee"
+              value={selectedEmployee}
+              onChange={(e) => setSelectedEmployee(e.target.value)}
+              className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md"
+            >
+              <option value="">All Employees</option>
+              {employees.map(employee => (
+                <option key={employee.id} value={employee.id}>
+                  {employee.name}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
-      )}
+      </div>
       
-      {reportType === 'payroll' && (
-        <>
-          <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+        <Card>
+          <div className="p-4">
+            <h3 className="text-lg font-medium text-gray-900 mb-1">Total Hours</h3>
+            <p className="text-3xl font-bold text-primary-600">{totalHours.toFixed(2)}</p>
+          </div>
+        </Card>
+        
+        <Card>
+          <div className="p-4">
+            <h3 className="text-lg font-medium text-gray-900 mb-1">Time Entries</h3>
+            <p className="text-3xl font-bold text-primary-600">{totalEntries}</p>
+          </div>
+        </Card>
+        
+        <Card>
+          <div className="p-4">
+            <h3 className="text-lg font-medium text-gray-900 mb-1">Active Clients</h3>
+            <p className="text-3xl font-bold text-primary-600">{uniqueClients}</p>
+          </div>
+        </Card>
+        
+        <Card>
+          <div className="p-4">
+            <h3 className="text-lg font-medium text-gray-900 mb-1">Active Employees</h3>
+            <p className="text-3xl font-bold text-primary-600">{uniqueEmployees}</p>
+          </div>
+        </Card>
+      </div>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <Card>
+          <div className="p-6">
             <h2 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-              <FiBarChart2 className="mr-2 text-primary-600" /> Monthly Payroll Overview
+              <FiPieChart className="mr-2 text-primary-600" /> Hours by Client
             </h2>
             <div className="h-80">
-              <Bar 
-                data={payrollData} 
-                options={{
-                  maintainAspectRatio: false,
-                  scales: {
-                    y: {
-                      beginAtZero: true,
-                      ticks: {
-                        callback: function(value) {
-                          return '$' + value.toLocaleString();
-                        }
-                      }
-                    }
-                  },
-                }}
-              />
+              <Pie data={clientData} options={{ maintainAspectRatio: false }} />
             </div>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <p className="text-sm font-medium text-gray-500 mb-1">Annual Payroll</p>
-              <p className="text-3xl font-bold text-gray-900">$1,835,000</p>
-              <p className="text-sm text-green-600 mt-2 flex items-center">
-                <FiTrendingUp className="mr-1" /> 7.2% increase from last year
-              </p>
-            </div>
-            
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <p className="text-sm font-medium text-gray-500 mb-1">Average Salary</p>
-              <p className="text-3xl font-bold text-gray-900">$76,458</p>
-              <p className="text-sm text-green-600 mt-2 flex items-center">
-                <FiTrendingUp className="mr-1" /> 5.1% increase from last year
-              </p>
-            </div>
-            
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <p className="text-sm font-medium text-gray-500 mb-1">Overtime Costs</p>
-              <p className="text-3xl font-bold text-gray-900">$127,500</p>
-              <p className="text-sm text-green-600 mt-2 flex items-center">
-                <FiTrendingUp className="mr-1" /> 2.3% decrease from last year
-              </p>
-            </div>
-          </div>
-          
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">Payroll Breakdown</h2>
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Month</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Gross Payroll</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Taxes</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Benefits</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Net Payroll</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {payrollData.labels.slice(0, 6).map((month, index) => (
-                  <tr key={index}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{month} 2025</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
-                      ${payrollData.datasets[0].data[index].toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
-                      ${Math.round(payrollData.datasets[0].data[index] * 0.25).toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
-                      ${Math.round(payrollData.datasets[0].data[index] * 0.15).toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
-                      ${Math.round(payrollData.datasets[0].data[index] * 0.6).toLocaleString()}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </>
-      )}
-      
-      {reportType === 'hours' && (
-        <>
-          <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+        </Card>
+        
+        <Card>
+          <div className="p-6">
             <h2 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-              <FiTrendingUp className="mr-2 text-primary-600" /> Hours Worked Trends
+              <FiPieChart className="mr-2 text-primary-600" /> Hours by Employee
             </h2>
             <div className="h-80">
-              <Line 
-                data={hoursData} 
-                options={{
-                  maintainAspectRatio: false,
-                  scales: {
-                    y: {
-                      beginAtZero: true
-                    }
-                  },
-                }}
-              />
+              <Pie data={employeeData} options={{ maintainAspectRatio: false }} />
             </div>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">Hours Summary</h2>
+        </Card>
+      </div>
+      
+      <div className="grid grid-cols-1 gap-6">
+        <Card>
+          <div className="p-6">
+            <h2 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+              <FiBriefcase className="mr-2 text-primary-600" /> Client Summary
+            </h2>
+            
+            <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Regular Hours</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Overtime Hours</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Hours</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Client
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Total Hours
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Employee Breakdown
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  <tr>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Engineering</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">3,840</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">245</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">4,085</td>
-                  </tr>
-                  <tr>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Marketing</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">2,240</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">120</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">2,360</td>
-                  </tr>
-                  <tr>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Sales</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">2,880</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">210</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">3,090</td>
-                  </tr>
-                  <tr>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Design</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">1,600</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">95</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">1,695</td>
-                  </tr>
-                  <tr>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Finance</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">1,280</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">30</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">1,310</td>
-                  </tr>
-                  <tr>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">HR</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">960</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">10</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">970</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">Overtime Analysis</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <p className="text-sm font-medium text-gray-500 mb-1">Total Overtime Hours</p>
-                  <p className="text-3xl font-bold text-gray-900">710</p>
-                  <p className="text-sm text-red-600 mt-2 flex items-center">
-                    <FiTrendingUp className="mr-1" /> 12% increase from last month
-                  </p>
-                </div>
-                
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <p className="text-sm font-medium text-gray-500 mb-1">Overtime Cost</p>
-                  <p className="text-3xl font-bold text-gray-900">$25,324</p>
-                  <p className="text-sm text-red-600 mt-2 flex items-center">
-                    <FiTrendingUp className="mr-1" /> 14.5% increase from last month
-                  </p>
-                </div>
-              </div>
-              
-              <h3 className="text-md font-medium text-gray-800 mb-2">Top Overtime Employees</h3>
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">OT Hours</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  <tr>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">John Smith</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Engineering</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">24</td>
-                  </tr>
-                  <tr>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Sarah Wilson</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Sales</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">18</td>
-                  </tr>
-                  <tr>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Michael Brown</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Engineering</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">16</td>
-                  </tr>
-                  <tr>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Lisa Johnson</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Marketing</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">12</td>
-                  </tr>
+                  {generateClientSummary().map((client) => (
+                    <tr key={client.id}>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">{client.name}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
+                        {client.totalHours.toFixed(2)}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm text-gray-500">
+                          {Object.entries(client.employeeHours).map(([empId, hours]) => {
+                            const employee = employees.find(e => e.id === empId);
+                            return (
+                              <div key={empId} className="flex justify-between items-center py-1">
+                                <span>{employee ? employee.name : 'Unknown'}</span>
+                                <span>{parseFloat(hours).toFixed(2)} hrs</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
           </div>
-        </>
-      )}
+        </Card>
+        
+        <Card>
+          <div className="p-6">
+            <h2 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+              <FiUsers className="mr-2 text-primary-600" /> Employee Summary
+            </h2>
+            
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Employee
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Total Hours
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Client Breakdown
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {generateEmployeeSummary().map((employee) => (
+                    <tr key={employee.id}>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">{employee.name}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
+                        {employee.totalHours.toFixed(2)}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm text-gray-500">
+                          {Object.entries(employee.clientHours).map(([clientId, hours]) => {
+                            const client = clients.find(c => c.id === clientId);
+                            return (
+                              <div key={clientId} className="flex justify-between items-center py-1">
+                                <span>{client ? client.name : 'Unknown'}</span>
+                                <span>{parseFloat(hours).toFixed(2)} hrs</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </Card>
+      </div>
     </div>
   );
 };
