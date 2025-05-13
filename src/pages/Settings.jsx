@@ -1,8 +1,9 @@
 import { useState, useContext } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
-import { FiSave, FiLock, FiUserCheck, FiBell } from 'react-icons/fi';
+import { FiSave, FiLock, FiUserCheck, FiBell, FiCloudLightning } from 'react-icons/fi';
 import Button from '../components/ui/Button';
 import { toast } from 'react-toastify';
+import GoogleScriptConnector from '../components/GoogleScriptConnector';
 
 const Settings = () => {
   const { currentUser, userRole } = useContext(AuthContext);
@@ -117,6 +118,16 @@ const Settings = () => {
                 onClick={() => setActiveTab('notifications')}
               >
                 Notifications
+              </button>
+              <button
+                className={`px-4 py-3 text-left text-sm font-medium ${
+                  activeTab === 'integrations'
+                    ? 'border-b-2 sm:border-b-0 sm:border-l-2 border-primary-500 text-primary-600 bg-primary-50'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                } w-full`}
+                onClick={() => setActiveTab('integrations')}
+              >
+                Integrations
               </button>
             </nav>
           </div>
@@ -429,6 +440,43 @@ const Settings = () => {
                         <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
                       </label>
                     </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {activeTab === 'integrations' && (
+              <div>
+                <div className="flex items-center mb-4">
+                  <FiCloudLightning className="mr-2 text-primary-600" />
+                  <h2 className="text-lg font-medium text-gray-900">Integrations</h2>
+                </div>
+                
+                <div className="space-y-6">
+                  <div className="border border-gray-200 rounded-lg p-4">
+                    <h3 className="text-md font-medium text-gray-900 mb-2">Google Apps Script Integration</h3>
+                    <p className="text-sm text-gray-500 mb-4">
+                      Connect to Google Apps Script to integrate with Google Sheets for data management.
+                      This allows you to import/export data and automate workflows.
+                    </p>
+                    
+                    <GoogleScriptConnector />
+                  </div>
+                  
+                  <div className="border border-gray-200 rounded-lg p-4 opacity-50">
+                    <h3 className="text-md font-medium text-gray-900 mb-2">Google Workspace Integration</h3>
+                    <p className="text-sm text-gray-500 mb-4">
+                      Connect with Google Workspace for calendar events, email notifications, and document management.
+                    </p>
+                    
+                    <Button
+                      variant="outline"
+                      disabled={true}
+                      className="flex items-center"
+                    >
+                      <FiCloud className="mr-2" />
+                      Coming Soon
+                    </Button>
                   </div>
                 </div>
               </div>
