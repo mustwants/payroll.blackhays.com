@@ -62,11 +62,56 @@ export const AuthProvider = ({ children }) => {
         setCurrentUser(user);
         setUserRole('admin');
         return true;
+      } else if (sanitizedEmail === 'employee@blackhays.com' && password === 'employee123') {
+        const user = {
+          id: '2',
+          name: 'Test Employee',
+          email: sanitizedEmail,
+          role: 'employee',
+        };
+        
+        localStorage.setItem('user', JSON.stringify(user));
+        
+        setCurrentUser(user);
+        setUserRole('employee');
+        return true;
       } else {
         throw new Error('Invalid email or password');
       }
     } catch (err) {
       setError(err.message);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Google login function
+  const googleLogin = async (googleResponse) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // In a real app, you would verify the Google token on your backend
+      // and create/fetch the user account
+      // For demo purposes, we'll simulate a successful login
+      
+      const user = {
+        id: googleResponse.profileObj.googleId || 'google-user-1',
+        name: googleResponse.profileObj.name || 'Google User',
+        email: googleResponse.profileObj.email || 'google@example.com',
+        role: 'employee', // Default role for Google auth users
+        avatar: googleResponse.profileObj.imageUrl,
+      };
+      
+      localStorage.setItem('user', JSON.stringify(user));
+      
+      setCurrentUser(user);
+      setUserRole('employee');
+      return true;
+    } catch (err) {
+      console.error('Google login error:', err);
+      setError('Failed to login with Google. Please try again.');
       return false;
     } finally {
       setLoading(false);
@@ -87,6 +132,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     error,
     login,
+    googleLogin,
     logout,
   };
 

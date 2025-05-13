@@ -11,6 +11,8 @@ const Employees = lazy(() => import('./pages/Employees'));
 const Payroll = lazy(() => import('./pages/Payroll'));
 const Reports = lazy(() => import('./pages/Reports'));
 const Settings = lazy(() => import('./pages/Settings'));
+const TimeTracking = lazy(() => import('./pages/TimeTracking'));
+const CrmContacts = lazy(() => import('./pages/CrmContacts'));
 
 // Loading fallback component
 const LoadingFallback = () => (
@@ -78,6 +80,8 @@ function App() {
               <Route path="payroll" element={<Payroll />} />
               <Route path="reports" element={<Reports />} />
               <Route path="settings" element={<Settings />} />
+              <Route path="time-tracking" element={<TimeTracking />} />
+              <Route path="crm-contacts" element={<CrmContacts />} />
             </Route>
             
             {/* Redirect from root to dashboard */}

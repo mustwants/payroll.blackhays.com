@@ -1,7 +1,9 @@
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
 import { toast } from 'react-toastify';
+import { FiUser, FiLock } from 'react-icons/fi';
+import { FaGoogle } from 'react-icons/fa';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -10,7 +12,47 @@ const Login = () => {
   
   const navigate = useNavigate();
   const location = useLocation();
-  const { currentUser, login, error } = useContext(AuthContext);
+  const { currentUser, login, googleLogin, error } = useContext(AuthContext);
+  
+  // Initialize Google API
+  useEffect(() => {
+    // Load Google API script
+    const loadGoogleScript = () => {
+      const script = document.createElement('script');
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.async = true;
+      script.defer = true;
+      document.body.appendChild(script);
+      
+      return () => {
+        document.body.removeChild(script);
+      };
+    };
+    
+    loadGoogleScript();
+  }, []);
+  
+  // Handle Google Sign-in success
+  const handleGoogleSuccess = (response) => {
+    googleLogin(response)
+      .then((success) => {
+        if (success) {
+          const from = location.state?.from?.pathname || '/';
+          navigate(from, { replace: true });
+          toast.success('Google login successful');
+        }
+      })
+      .catch((err) => {
+        toast.error('Google login failed. Please try again.');
+        console.error('Google login error:', err);
+      });
+  };
+  
+  // Handle Google Sign-in failure
+  const handleGoogleFailure = (error) => {
+    console.error('Google Sign-in failed:', error);
+    toast.error('Google login failed. Please try again.');
+  };
   
   // Redirect if already logged in
   if (currentUser) {
@@ -72,7 +114,10 @@ const Login = () => {
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Email Address
               </label>
-              <div className="mt-1">
+              <div className="mt-1 relative rounded-md shadow-sm">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FiUser className="h-5 w-5 text-gray-400" />
+                </div>
                 <input
                   id="email"
                   name="email"
@@ -81,7 +126,7 @@ const Login = () => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                  className="appearance-none block w-full pl-10 px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                   placeholder="Enter your email"
                 />
               </div>
@@ -91,7 +136,10 @@ const Login = () => {
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Password
               </label>
-              <div className="mt-1">
+              <div className="mt-1 relative rounded-md shadow-sm">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FiLock className="h-5 w-5 text-gray-400" />
+                </div>
                 <input
                   id="password"
                   name="password"
@@ -100,7 +148,7 @@ const Login = () => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                  className="appearance-none block w-full pl-10 px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                   placeholder="Enter your password"
                 />
               </div>
@@ -137,6 +185,39 @@ const Login = () => {
             </div>
           </form>
 
+          <div className="mt-6">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">Or continue with</span>
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <button
+                onClick={() => {
+                  // In a real app, this would use the Google Sign-In API
+                  const mockGoogleResponse = {
+                    profileObj: {
+                      googleId: 'mock-google-id',
+                      name: 'Google User',
+                      email: 'google-user@example.com',
+                      imageUrl: 'https://via.placeholder.com/32',
+                    },
+                  };
+                  handleGoogleSuccess(mockGoogleResponse);
+                }}
+                type="button"
+                className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+              >
+                <FaGoogle className="h-5 w-5 text-red-500 mr-2" />
+                Sign in with Google
+              </button>
+            </div>
+          </div>
+
           {/* Demo credentials section */}
           <div className="mt-6">
             <div className="relative">
@@ -149,9 +230,17 @@ const Login = () => {
                 </span>
               </div>
             </div>
-            <div className="mt-4 text-sm text-center text-gray-600">
-              <p>Email: admin@blackhays.com</p>
-              <p>Password: admin123</p>
+            <div className="mt-4 text-sm text-center text-gray-600 grid grid-cols-1 md:grid-cols-2 gap-2">
+              <div className="border border-gray-200 rounded p-2">
+                <p className="font-medium">Admin:</p>
+                <p>admin@blackhays.com</p>
+                <p>admin123</p>
+              </div>
+              <div className="border border-gray-200 rounded p-2">
+                <p className="font-medium">Employee:</p>
+                <p>employee@blackhays.com</p>
+                <p>employee123</p>
+              </div>
             </div>
           </div>
         </div>

@@ -1,11 +1,11 @@
 import { useState, useContext } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
-import { FiHome, FiUsers, FiDollarSign, FiBarChart2, FiSettings, FiMenu, FiX, FiLogOut } from 'react-icons/fi';
+import { FiHome, FiUsers, FiDollarSign, FiBarChart2, FiSettings, FiMenu, FiX, FiLogOut, FiClock, FiAddressBook } from 'react-icons/fi';
 
 const DashboardLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { currentUser, logout } = useContext(AuthContext);
+  const { currentUser, userRole, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -17,8 +17,8 @@ const DashboardLayout = () => {
     setSidebarOpen(!sidebarOpen);
   };
 
-  // Navigation items
-  const navItems = [
+  // Admin navigation items
+  const adminNavItems = [
     { path: '/', label: 'Dashboard', icon: <FiHome size={20} /> },
     { path: '/employees', label: 'Employees', icon: <FiUsers size={20} /> },
     { path: '/payroll', label: 'Payroll', icon: <FiDollarSign size={20} /> },
@@ -26,9 +26,19 @@ const DashboardLayout = () => {
     { path: '/settings', label: 'Settings', icon: <FiSettings size={20} /> },
   ];
 
+  // Employee navigation items
+  const employeeNavItems = [
+    { path: '/', label: 'Dashboard', icon: <FiHome size={20} /> },
+    { path: '/time-tracking', label: 'Time Tracking', icon: <FiClock size={20} /> },
+    { path: '/crm-contacts', label: 'CRM Contacts', icon: <FiAddressBook size={20} /> },
+  ];
+
+  // Select navigation items based on user role
+  const navItems = userRole === 'admin' ? adminNavItems : employeeNavItems;
+
   return (
     <div className="flex h-screen bg-gray-50">
-      {/* Sidebar for mobile */}
+      {/* Sidebar overlay for mobile */}
       <div 
         className={`fixed inset-0 z-20 transition-opacity duration-300 ${
           sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
@@ -110,7 +120,13 @@ const DashboardLayout = () => {
               <span className="mr-2 text-sm text-gray-600 hidden md:block">
                 Welcome, {currentUser?.name}
               </span>
-              {/* Profile picture/avatar could go here */}
+              {currentUser?.avatar && (
+                <img 
+                  src={currentUser.avatar} 
+                  alt="Profile" 
+                  className="h-8 w-8 rounded-full" 
+                />
+              )}
             </div>
           </div>
         </header>
