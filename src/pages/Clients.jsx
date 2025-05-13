@@ -1,11 +1,11 @@
 import { useState, useContext, useRef, useEffect } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
-import { FiUserPlus, FiSearch, FiEdit2, FiTrash2, FiMail, FiPhone, FiSave, FiX, FiUpload, FiUsers } from 'react-icons/fi';
+import { FiPlus, FiSearch, FiEdit2, FiTrash2, FiMail, FiPhone, FiSave, FiX, FiUpload, FiBriefcase, FiLink, FiDollarSign, FiClock } from 'react-icons/fi';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 import { toast } from 'react-toastify';
 
-const Employees = () => {
+const Clients = () => {
   const { userRole } = useContext(AuthContext);
   const fileInputRef = useRef(null);
   
@@ -15,199 +15,210 @@ const Employees = () => {
       <div className="flex flex-col items-center justify-center p-4">
         <h1 className="text-2xl font-bold text-red-600 mb-3">Access Denied</h1>
         <p className="mb-4">
-          You don't have permission to access the employees page.
+          You don't have permission to access the clients page.
         </p>
       </div>
     );
   }
   
-  // Employee data state
-  const [employees, setEmployees] = useState(() => {
-    const saved = localStorage.getItem('employees');
+  // Client data state
+  const [clients, setClients] = useState(() => {
+    const saved = localStorage.getItem('clients');
     const initialValue = saved ? JSON.parse(saved) : [
       {
         id: '1',
-        name: 'John Smith',
-        email: 'john.smith@blackhays.com',
+        name: 'Acme Corporation',
+        contactName: 'John Doe',
+        email: 'contact@acmecorp.com',
         phone: '(555) 123-4567',
-        department: 'Engineering',
-        position: 'Senior Developer',
+        address: '123 Main St, New York, NY 10001',
+        website: 'https://acmecorp.com',
+        logo: '',
         status: 'active',
-        hireDate: '2020-05-15',
-        avatar: '',
-        hoursAllocated: 160,
-        hoursUsed: 120,
-        address: '123 Main St, New York, NY',
-        emergencyContact: 'Jane Smith - (555) 987-6543',
-        payRate: 45.00,
-        contractType: 'Full-time'
+        startDate: '2023-01-15',
+        endDate: '2023-12-31',
+        totalHours: 1200,
+        usedHours: 450,
+        monthlyHours: 100,
+        rate: 75.00,
+        notes: 'Key client for engineering services'
       },
       {
         id: '2',
-        name: 'Lisa Johnson',
-        email: 'lisa.johnson@blackhays.com',
+        name: 'Globex Industries',
+        contactName: 'Lisa Miller',
+        email: 'lisa@globexindustries.com',
         phone: '(555) 234-5678',
-        department: 'Design',
-        position: 'UI/UX Designer',
+        address: '456 Tech Blvd, San Francisco, CA 94107',
+        website: 'https://globexindustries.com',
+        logo: '',
         status: 'active',
-        hireDate: '2021-02-10',
-        avatar: '',
-        hoursAllocated: 120,
-        hoursUsed: 85,
-        address: '456 Park Ave, Boston, MA',
-        emergencyContact: 'Mike Johnson - (555) 876-5432',
-        payRate: 40.00,
-        contractType: 'Full-time'
+        startDate: '2023-03-01',
+        endDate: '2024-02-28',
+        totalHours: 800,
+        usedHours: 320,
+        monthlyHours: 80,
+        rate: 85.00,
+        notes: 'Technology consulting project'
       },
       {
         id: '3',
-        name: 'Michael Brown',
-        email: 'michael.brown@blackhays.com',
+        name: 'Wayne Enterprises',
+        contactName: 'Bruce Wayne',
+        email: 'bruce@wayneenterprises.com',
         phone: '(555) 345-6789',
-        department: 'Marketing',
-        position: 'Marketing Manager',
-        status: 'active',
-        hireDate: '2019-11-05',
-        avatar: '',
-        hoursAllocated: 140,
-        hoursUsed: 135,
-        address: '789 Broadway, Chicago, IL',
-        emergencyContact: 'Sarah Brown - (555) 765-4321',
-        payRate: 42.50,
-        contractType: 'Full-time'
+        address: '789 Gotham Ave, Gotham City, NJ 07001',
+        website: 'https://wayneenterprises.com',
+        logo: '',
+        status: 'inactive',
+        startDate: '2022-09-15',
+        endDate: '2023-09-14',
+        totalHours: 600,
+        usedHours: 600,
+        monthlyHours: 50,
+        rate: 90.00,
+        notes: 'Contract completed'
       },
       {
         id: '4',
-        name: 'Sarah Wilson',
-        email: 'sarah.wilson@blackhays.com',
+        name: 'Stark Industries',
+        contactName: 'Tony Stark',
+        email: 'tony@starkindustries.com',
         phone: '(555) 456-7890',
-        department: 'Finance',
-        position: 'Financial Analyst',
+        address: '1 Stark Tower, Manhattan, NY 10010',
+        website: 'https://starkindustries.com',
+        logo: '',
         status: 'active',
-        hireDate: '2022-01-20',
-        avatar: '',
-        hoursAllocated: 160,
-        hoursUsed: 110,
-        address: '321 Pine St, San Francisco, CA',
-        emergencyContact: 'Tom Wilson - (555) 654-3210',
-        payRate: 38.75,
-        contractType: 'Full-time'
+        startDate: '2023-05-01',
+        endDate: '2024-04-30',
+        totalHours: 2400,
+        usedHours: 800,
+        monthlyHours: 200,
+        rate: 95.00,
+        notes: 'High priority client'
       },
       {
         id: '5',
-        name: 'David Lee',
-        email: 'david.lee@blackhays.com',
+        name: 'Umbrella Corporation',
+        contactName: 'Albert Wesker',
+        email: 'wesker@umbrellacorp.com',
         phone: '(555) 567-8901',
-        department: 'Sales',
-        position: 'Sales Representative',
-        status: 'inactive',
-        hireDate: '2018-07-12',
-        avatar: '',
-        hoursAllocated: 80,
-        hoursUsed: 45,
-        address: '654 Oak Dr, Austin, TX',
-        emergencyContact: 'Amy Lee - (555) 543-2109',
-        payRate: 35.00,
-        contractType: 'Part-time'
+        address: '100 Raccoon St, Raccoon City, MO 65201',
+        website: 'https://umbrellacorp.com',
+        logo: '',
+        status: 'active',
+        startDate: '2023-02-15',
+        endDate: '2024-02-14',
+        totalHours: 960,
+        usedHours: 640,
+        monthlyHours: 80,
+        rate: 80.00,
+        notes: 'Research and development project'
       },
     ];
     return initialValue;
   });
 
-  // Save employees to localStorage when they change
+  // Save clients to localStorage when they change
   useEffect(() => {
-    localStorage.setItem('employees', JSON.stringify(employees));
-  }, [employees]);
+    localStorage.setItem('clients', JSON.stringify(clients));
+  }, [clients]);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
-  const [currentEmployee, setCurrentEmployee] = useState(null);
+  const [currentClient, setCurrentClient] = useState(null);
   
-  // Initial empty employee template
-  const emptyEmployee = {
+  // Initial empty client template
+  const emptyClient = {
     id: '',
     name: '',
+    contactName: '',
     email: '',
     phone: '',
-    department: '',
-    position: '',
-    status: 'active',
-    hireDate: new Date().toISOString().split('T')[0],
-    avatar: '',
-    hoursAllocated: 160,
-    hoursUsed: 0,
     address: '',
-    emergencyContact: '',
-    payRate: 0,
-    contractType: 'Full-time'
+    website: '',
+    logo: '',
+    status: 'active',
+    startDate: new Date().toISOString().split('T')[0],
+    endDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0],
+    totalHours: 0,
+    usedHours: 0,
+    monthlyHours: 0,
+    rate: 0,
+    notes: ''
   };
   
-  // Filter employees based on search term
-  const filteredEmployees = employees.filter(
-    employee => 
-      employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      employee.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      employee.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      employee.position.toLowerCase().includes(searchTerm.toLowerCase())
+  // Filter clients based on search term
+  const filteredClients = clients.filter(
+    client => 
+      client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      client.contactName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      client.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
   
-  // Handle opening the modal for adding a new employee
-  const handleAddEmployee = () => {
-    setCurrentEmployee({ ...emptyEmployee, id: Date.now().toString() });
+  // Handle opening the modal for adding a new client
+  const handleAddClient = () => {
+    setCurrentClient({ ...emptyClient, id: Date.now().toString() });
     setEditMode(false);
     setIsModalOpen(true);
   };
   
-  // Handle opening the modal for editing an existing employee
-  const handleEditEmployee = (employee) => {
-    setCurrentEmployee({ ...employee });
+  // Handle opening the modal for editing an existing client
+  const handleEditClient = (client) => {
+    setCurrentClient({ ...client });
     setEditMode(true);
     setIsModalOpen(true);
   };
   
-  // Handle saving the employee data
-  const handleSaveEmployee = () => {
+  // Handle saving the client data
+  const handleSaveClient = () => {
     // Validate form
-    if (!currentEmployee.name || !currentEmployee.email || !currentEmployee.department || !currentEmployee.position) {
+    if (!currentClient.name || !currentClient.email) {
       toast.error('Please fill out all required fields');
       return;
     }
     
     if (editMode) {
-      // Update existing employee
-      setEmployees(employees.map(emp => emp.id === currentEmployee.id ? currentEmployee : emp));
-      toast.success('Employee updated successfully');
+      // Update existing client
+      setClients(clients.map(c => c.id === currentClient.id ? currentClient : c));
+      toast.success('Client updated successfully');
     } else {
-      // Add new employee
-      setEmployees([...employees, currentEmployee]);
-      toast.success('Employee added successfully');
+      // Add new client
+      setClients([...clients, currentClient]);
+      toast.success('Client added successfully');
     }
     
     setIsModalOpen(false);
   };
   
-  // Handle deleting an employee
-  const handleDeleteEmployee = (id) => {
-    if (window.confirm('Are you sure you want to delete this employee?')) {
-      setEmployees(employees.filter(emp => emp.id !== id));
-      toast.success('Employee deleted successfully');
+  // Handle deleting a client
+  const handleDeleteClient = (id) => {
+    if (window.confirm('Are you sure you want to delete this client?')) {
+      setClients(clients.filter(c => c.id !== id));
+      toast.success('Client deleted successfully');
     }
   };
   
   // Handle input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setCurrentEmployee({ ...currentEmployee, [name]: value });
+    setCurrentClient({ ...currentClient, [name]: value });
   };
   
-  // Handle file upload for avatar
-  const handleAvatarUpload = (e) => {
+  // Handle numeric input changes
+  const handleNumericInputChange = (e) => {
+    const { name, value } = e.target;
+    setCurrentClient({ ...currentClient, [name]: parseFloat(value) || 0 });
+  };
+  
+  // Handle file upload for logo
+  const handleLogoUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setCurrentEmployee({ ...currentEmployee, avatar: reader.result });
+        setCurrentClient({ ...currentClient, logo: reader.result });
       };
       reader.readAsDataURL(file);
     }
@@ -221,7 +232,7 @@ const Employees = () => {
   return (
     <div className="animate-fade-in">
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-4 md:mb-0">Employees</h1>
+        <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-4 md:mb-0">Clients</h1>
         
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative">
@@ -233,16 +244,16 @@ const Employees = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-              placeholder="Search employees..."
+              placeholder="Search clients..."
             />
           </div>
           
           <Button
             variant="primary"
             className="inline-flex items-center px-4 py-2"
-            onClick={handleAddEmployee}
+            onClick={handleAddClient}
           >
-            <FiUserPlus className="mr-2" /> Add Employee
+            <FiPlus className="mr-2" /> Add Client
           </Button>
         </div>
       </div>
@@ -253,13 +264,13 @@ const Employees = () => {
             <thead className="bg-gray-50 dark:bg-gray-800">
               <tr>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Employee
+                  Client
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                   Contact
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Department
+                  Contract
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                   Hours
@@ -267,79 +278,87 @@ const Employees = () => {
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                   Status
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Hire Date
-                </th>
                 <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              {filteredEmployees.map((employee) => (
-                <tr key={employee.id}>
+              {filteredClients.map((client) => (
+                <tr key={client.id}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-10 w-10">
-                        {employee.avatar ? (
-                          <img className="h-10 w-10 rounded-full object-cover" src={employee.avatar} alt={employee.name} />
+                        {client.logo ? (
+                          <img className="h-10 w-10 rounded object-cover" src={client.logo} alt={client.name} />
                         ) : (
-                          <div className="h-10 w-10 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center">
+                          <div className="h-10 w-10 rounded bg-primary-100 dark:bg-primary-900 flex items-center justify-center">
                             <span className="text-primary-800 dark:text-primary-200 font-medium">
-                              {employee.name.split(' ').map(n => n[0]).join('')}
+                              {client.name.charAt(0)}
                             </span>
                           </div>
                         )}
                       </div>
                       <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900 dark:text-white">{employee.name}</div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">{employee.position}</div>
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">{client.name}</div>
+                        {client.website && (
+                          <a href={client.website} target="_blank" rel="noopener noreferrer" className="text-sm text-primary-600 dark:text-primary-400 hover:underline flex items-center">
+                            <FiLink className="mr-1" size={12} /> Website
+                          </a>
+                        )}
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900 dark:text-white flex items-center">
-                      <FiMail className="mr-1" /> {employee.email}
+                    <div className="text-sm text-gray-900 dark:text-white">{client.contactName}</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
+                      <FiMail className="mr-1" /> {client.email}
                     </div>
                     <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
-                      <FiPhone className="mr-1" /> {employee.phone}
+                      <FiPhone className="mr-1" /> {client.phone}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900 dark:text-white">{employee.department}</div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">{employee.contractType}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                      {new Date(client.startDate).toLocaleDateString()} to {new Date(client.endDate).toLocaleDateString()}
+                    </div>
+                    <div className="text-sm text-gray-900 dark:text-white flex items-center mt-1">
+                      <FiDollarSign className="mr-1" /> {client.rate.toFixed(2)}/hr
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900 dark:text-white">{employee.hoursUsed} / {employee.hoursAllocated}</div>
+                    <div className="text-sm text-gray-900 dark:text-white flex items-center">
+                      <FiClock className="mr-1" /> {client.usedHours} / {client.totalHours} hrs total
+                    </div>
                     <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mt-1">
                       <div 
                         className="bg-primary-600 h-2.5 rounded-full" 
-                        style={{ width: `${Math.min(100, (employee.hoursUsed / employee.hoursAllocated) * 100)}%` }}
+                        style={{ width: `${Math.min(100, (client.usedHours / client.totalHours) * 100)}%` }}
                       ></div>
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      {client.monthlyHours} hrs/month
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      employee.status === 'active' 
+                      client.status === 'active' 
                         ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
-                        : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                        : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
                     }`}>
-                      {employee.status.charAt(0).toUpperCase() + employee.status.slice(1)}
+                      {client.status.charAt(0).toUpperCase() + client.status.slice(1)}
                     </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                    {new Date(employee.hireDate).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button 
                       className="text-primary-600 dark:text-primary-400 hover:text-primary-900 dark:hover:text-primary-300 mr-3"
-                      onClick={() => handleEditEmployee(employee)}
+                      onClick={() => handleEditClient(client)}
                     >
                       <FiEdit2 />
                     </button>
                     <button 
                       className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300"
-                      onClick={() => handleDeleteEmployee(employee.id)}
+                      onClick={() => handleDeleteClient(client.id)}
                     >
                       <FiTrash2 />
                     </button>
@@ -351,7 +370,7 @@ const Employees = () => {
         </div>
       </Card>
 
-      {/* Employee Modal */}
+      {/* Client Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
           <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
@@ -364,21 +383,21 @@ const Employees = () => {
                 <div className="sm:flex sm:items-start">
                   <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
                     <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white" id="modal-title">
-                      {editMode ? 'Edit Employee' : 'Add New Employee'}
+                      {editMode ? 'Edit Client' : 'Add New Client'}
                     </h3>
                     <div className="mt-4 grid grid-cols-6 gap-6">
-                      {/* Avatar upload */}
+                      {/* Logo upload */}
                       <div className="col-span-6 sm:col-span-6 flex justify-center">
                         <div className="relative">
-                          {currentEmployee.avatar ? (
+                          {currentClient.logo ? (
                             <img 
-                              src={currentEmployee.avatar} 
-                              alt="Employee Avatar" 
-                              className="w-24 h-24 rounded-full object-cover border-2 border-gray-300 dark:border-gray-600"
+                              src={currentClient.logo} 
+                              alt="Client Logo" 
+                              className="w-24 h-24 rounded object-cover border-2 border-gray-300 dark:border-gray-600"
                             />
                           ) : (
-                            <div className="w-24 h-24 rounded-full bg-primary-100 dark:bg-primary-800 flex items-center justify-center">
-                              <FiUsers className="h-12 w-12 text-primary-600 dark:text-primary-300" />
+                            <div className="w-24 h-24 rounded bg-primary-100 dark:bg-primary-800 flex items-center justify-center">
+                              <FiBriefcase className="h-12 w-12 text-primary-600 dark:text-primary-300" />
                             </div>
                           )}
                           <button
@@ -391,25 +410,39 @@ const Employees = () => {
                           <input
                             type="file"
                             ref={fileInputRef}
-                            onChange={handleAvatarUpload}
+                            onChange={handleLogoUpload}
                             accept="image/*"
                             className="hidden"
                           />
                         </div>
                       </div>
 
-                      {/* Personal Information */}
-                      <div className="col-span-6 sm:col-span-3">
+                      {/* Client Information */}
+                      <div className="col-span-6">
                         <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Full Name <span className="text-red-500">*</span>
+                          Client Name <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="text"
                           name="name"
                           id="name"
-                          value={currentEmployee.name}
+                          value={currentClient.name}
                           onChange={handleInputChange}
                           required
+                          className="mt-1 focus:ring-primary-500 focus:border-primary-500 block w-full shadow-sm sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
+                        />
+                      </div>
+
+                      <div className="col-span-6 sm:col-span-3">
+                        <label htmlFor="contactName" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Contact Person
+                        </label>
+                        <input
+                          type="text"
+                          name="contactName"
+                          id="contactName"
+                          value={currentClient.contactName}
+                          onChange={handleInputChange}
                           className="mt-1 focus:ring-primary-500 focus:border-primary-500 block w-full shadow-sm sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
                         />
                       </div>
@@ -422,7 +455,7 @@ const Employees = () => {
                           type="email"
                           name="email"
                           id="email"
-                          value={currentEmployee.email}
+                          value={currentClient.email}
                           onChange={handleInputChange}
                           required
                           className="mt-1 focus:ring-primary-500 focus:border-primary-500 block w-full shadow-sm sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
@@ -431,126 +464,28 @@ const Employees = () => {
 
                       <div className="col-span-6 sm:col-span-3">
                         <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Phone Number
+                          Phone
                         </label>
                         <input
                           type="tel"
                           name="phone"
                           id="phone"
-                          value={currentEmployee.phone}
+                          value={currentClient.phone}
                           onChange={handleInputChange}
                           className="mt-1 focus:ring-primary-500 focus:border-primary-500 block w-full shadow-sm sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
                         />
                       </div>
 
                       <div className="col-span-6 sm:col-span-3">
-                        <label htmlFor="hireDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Hire Date
+                        <label htmlFor="website" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Website
                         </label>
                         <input
-                          type="date"
-                          name="hireDate"
-                          id="hireDate"
-                          value={currentEmployee.hireDate}
+                          type="url"
+                          name="website"
+                          id="website"
+                          value={currentClient.website}
                           onChange={handleInputChange}
-                          className="mt-1 focus:ring-primary-500 focus:border-primary-500 block w-full shadow-sm sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
-                        />
-                      </div>
-
-                      <div className="col-span-6 sm:col-span-3">
-                        <label htmlFor="department" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Department <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          name="department"
-                          id="department"
-                          value={currentEmployee.department}
-                          onChange={handleInputChange}
-                          required
-                          className="mt-1 focus:ring-primary-500 focus:border-primary-500 block w-full shadow-sm sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
-                        />
-                      </div>
-
-                      <div className="col-span-6 sm:col-span-3">
-                        <label htmlFor="position" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Position <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          name="position"
-                          id="position"
-                          value={currentEmployee.position}
-                          onChange={handleInputChange}
-                          required
-                          className="mt-1 focus:ring-primary-500 focus:border-primary-500 block w-full shadow-sm sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
-                        />
-                      </div>
-
-                      <div className="col-span-6 sm:col-span-3">
-                        <label htmlFor="status" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Status
-                        </label>
-                        <select
-                          id="status"
-                          name="status"
-                          value={currentEmployee.status}
-                          onChange={handleInputChange}
-                          className="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm text-gray-900 dark:text-white"
-                        >
-                          <option value="active">Active</option>
-                          <option value="inactive">Inactive</option>
-                          <option value="on-leave">On Leave</option>
-                          <option value="terminated">Terminated</option>
-                        </select>
-                      </div>
-
-                      <div className="col-span-6 sm:col-span-3">
-                        <label htmlFor="contractType" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Contract Type
-                        </label>
-                        <select
-                          id="contractType"
-                          name="contractType"
-                          value={currentEmployee.contractType}
-                          onChange={handleInputChange}
-                          className="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm text-gray-900 dark:text-white"
-                        >
-                          <option value="Full-time">Full-time</option>
-                          <option value="Part-time">Part-time</option>
-                          <option value="Contract">Contract</option>
-                          <option value="Temporary">Temporary</option>
-                        </select>
-                      </div>
-
-                      <div className="col-span-6 sm:col-span-3">
-                        <label htmlFor="hoursAllocated" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Hours Allocated (Monthly)
-                        </label>
-                        <input
-                          type="number"
-                          name="hoursAllocated"
-                          id="hoursAllocated"
-                          value={currentEmployee.hoursAllocated}
-                          onChange={handleInputChange}
-                          min="0"
-                          step="1"
-                          className="mt-1 focus:ring-primary-500 focus:border-primary-500 block w-full shadow-sm sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
-                        />
-                      </div>
-
-                      <div className="col-span-6 sm:col-span-3">
-                        <label htmlFor="hoursUsed" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Hours Used
-                        </label>
-                        <input
-                          type="number"
-                          name="hoursUsed"
-                          id="hoursUsed"
-                          value={currentEmployee.hoursUsed}
-                          onChange={handleInputChange}
-                          min="0"
-                          step="1"
                           className="mt-1 focus:ring-primary-500 focus:border-primary-500 block w-full shadow-sm sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
                         />
                       </div>
@@ -563,40 +498,135 @@ const Employees = () => {
                           type="text"
                           name="address"
                           id="address"
-                          value={currentEmployee.address}
+                          value={currentClient.address}
                           onChange={handleInputChange}
                           className="mt-1 focus:ring-primary-500 focus:border-primary-500 block w-full shadow-sm sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
                         />
                       </div>
 
+                      {/* Contract Information */}
                       <div className="col-span-6 sm:col-span-3">
-                        <label htmlFor="emergencyContact" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Emergency Contact
+                        <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Start Date
                         </label>
                         <input
-                          type="text"
-                          name="emergencyContact"
-                          id="emergencyContact"
-                          value={currentEmployee.emergencyContact}
+                          type="date"
+                          name="startDate"
+                          id="startDate"
+                          value={currentClient.startDate}
                           onChange={handleInputChange}
                           className="mt-1 focus:ring-primary-500 focus:border-primary-500 block w-full shadow-sm sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
                         />
                       </div>
 
                       <div className="col-span-6 sm:col-span-3">
-                        <label htmlFor="payRate" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Pay Rate ($/hour)
+                        <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                          End Date
+                        </label>
+                        <input
+                          type="date"
+                          name="endDate"
+                          id="endDate"
+                          value={currentClient.endDate}
+                          onChange={handleInputChange}
+                          className="mt-1 focus:ring-primary-500 focus:border-primary-500 block w-full shadow-sm sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
+                        />
+                      </div>
+
+                      <div className="col-span-6 sm:col-span-3">
+                        <label htmlFor="status" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Status
+                        </label>
+                        <select
+                          id="status"
+                          name="status"
+                          value={currentClient.status}
+                          onChange={handleInputChange}
+                          className="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm text-gray-900 dark:text-white"
+                        >
+                          <option value="active">Active</option>
+                          <option value="inactive">Inactive</option>
+                          <option value="pending">Pending</option>
+                          <option value="completed">Completed</option>
+                        </select>
+                      </div>
+
+                      <div className="col-span-6 sm:col-span-3">
+                        <label htmlFor="rate" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Hourly Rate ($)
                         </label>
                         <input
                           type="number"
-                          name="payRate"
-                          id="payRate"
-                          value={currentEmployee.payRate}
-                          onChange={handleInputChange}
+                          name="rate"
+                          id="rate"
+                          value={currentClient.rate}
+                          onChange={handleNumericInputChange}
                           min="0"
                           step="0.01"
                           className="mt-1 focus:ring-primary-500 focus:border-primary-500 block w-full shadow-sm sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
                         />
+                      </div>
+
+                      <div className="col-span-6 sm:col-span-2">
+                        <label htmlFor="totalHours" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Total Contract Hours
+                        </label>
+                        <input
+                          type="number"
+                          name="totalHours"
+                          id="totalHours"
+                          value={currentClient.totalHours}
+                          onChange={handleNumericInputChange}
+                          min="0"
+                          step="1"
+                          className="mt-1 focus:ring-primary-500 focus:border-primary-500 block w-full shadow-sm sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
+                        />
+                      </div>
+
+                      <div className="col-span-6 sm:col-span-2">
+                        <label htmlFor="usedHours" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Used Hours
+                        </label>
+                        <input
+                          type="number"
+                          name="usedHours"
+                          id="usedHours"
+                          value={currentClient.usedHours}
+                          onChange={handleNumericInputChange}
+                          min="0"
+                          step="1"
+                          className="mt-1 focus:ring-primary-500 focus:border-primary-500 block w-full shadow-sm sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
+                        />
+                      </div>
+
+                      <div className="col-span-6 sm:col-span-2">
+                        <label htmlFor="monthlyHours" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Monthly Hours
+                        </label>
+                        <input
+                          type="number"
+                          name="monthlyHours"
+                          id="monthlyHours"
+                          value={currentClient.monthlyHours}
+                          onChange={handleNumericInputChange}
+                          min="0"
+                          step="1"
+                          className="mt-1 focus:ring-primary-500 focus:border-primary-500 block w-full shadow-sm sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
+                        />
+                      </div>
+
+                      <div className="col-span-6">
+                        <label htmlFor="notes" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Notes
+                        </label>
+                        <textarea
+                          name="notes"
+                          id="notes"
+                          rows="3"
+                          value={currentClient.notes}
+                          onChange={handleInputChange}
+                          className="mt-1 focus:ring-primary-500 focus:border-primary-500 block w-full shadow-sm sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
+                        ></textarea>
                       </div>
                     </div>
                   </div>
@@ -606,7 +636,7 @@ const Employees = () => {
                 <button
                   type="button"
                   className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm"
-                  onClick={handleSaveEmployee}
+                  onClick={handleSaveClient}
                 >
                   <FiSave className="mr-2" /> {editMode ? 'Update' : 'Save'}
                 </button>
@@ -626,4 +656,4 @@ const Employees = () => {
   );
 };
 
-export default Employees;
+export default Clients;

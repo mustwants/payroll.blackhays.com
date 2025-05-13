@@ -8,6 +8,9 @@ import PageNotFound from './pages/PageNotFound';
 // Lazy load components for better performance
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Employees = lazy(() => import('./pages/Employees'));
+const Clients = lazy(() => import('./pages/Clients'));
+const TaskAssignment = lazy(() => import('./pages/TaskAssignment'));
+const CompanyInfo = lazy(() => import('./pages/CompanyInfo'));
 const Payroll = lazy(() => import('./pages/Payroll'));
 const Reports = lazy(() => import('./pages/Reports'));
 const Settings = lazy(() => import('./pages/Settings'));
@@ -77,6 +80,9 @@ function App() {
             >
               <Route index element={<Dashboard />} />
               <Route path="employees" element={<Employees />} />
+              <Route path="clients" element={<Clients />} />
+              <Route path="task-assignment" element={<TaskAssignment />} />
+              <Route path="company-info" element={<CompanyInfo />} />
               <Route path="payroll" element={<Payroll />} />
               <Route path="reports" element={<Reports />} />
               <Route path="settings" element={<Settings />} />

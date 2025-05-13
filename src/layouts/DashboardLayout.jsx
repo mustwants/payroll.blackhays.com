@@ -2,7 +2,7 @@ import { useState, useContext } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
 import { ThemeContext } from '../contexts/ThemeContext';
-import { FiHome, FiUsers, FiDollarSign, FiBarChart2, FiSettings, FiMenu, FiX, FiLogOut, FiClock, FiBook } from 'react-icons/fi';
+import { FiHome, FiUsers, FiDollarSign, FiBarChart2, FiSettings, FiMenu, FiX, FiLogOut, FiClock, FiBook, FiBriefcase, FiGrid, FiInfo } from 'react-icons/fi';
 import ThemeToggle from '../components/ui/ThemeToggle';
 
 const DashboardLayout = () => {
@@ -24,8 +24,11 @@ const DashboardLayout = () => {
   const adminNavItems = [
     { path: '/', label: 'Dashboard', icon: <FiHome size={20} /> },
     { path: '/employees', label: 'Employees', icon: <FiUsers size={20} /> },
+    { path: '/clients', label: 'Clients', icon: <FiBriefcase size={20} /> },
+    { path: '/task-assignment', label: 'Task Assignment', icon: <FiGrid size={20} /> },
     { path: '/payroll', label: 'Payroll', icon: <FiDollarSign size={20} /> },
     { path: '/reports', label: 'Reports', icon: <FiBarChart2 size={20} /> },
+    { path: '/company-info', label: 'Company Info', icon: <FiInfo size={20} /> },
     { path: '/settings', label: 'Settings', icon: <FiSettings size={20} /> },
   ];
 
