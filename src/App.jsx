@@ -9,6 +9,7 @@ import PageNotFound from './pages/PageNotFound';
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Employees = lazy(() => import('./pages/Employees'));
 const Clients = lazy(() => import('./pages/Clients'));
+const ClientDetail = lazy(() => import('./pages/ClientDetail'));
 const TaskAssignment = lazy(() => import('./pages/TaskAssignment'));
 const CompanyInfo = lazy(() => import('./pages/CompanyInfo'));
 const Payroll = lazy(() => import('./pages/Payroll'));
@@ -81,6 +82,7 @@ function App() {
               <Route index element={<Dashboard />} />
               <Route path="employees" element={<Employees />} />
               <Route path="clients" element={<Clients />} />
+              <Route path="clients/:clientId" element={<ClientDetail />} />
               <Route path="task-assignment" element={<TaskAssignment />} />
               <Route path="company-info" element={<CompanyInfo />} />
               <Route path="payroll" element={<Payroll />} />

@@ -1,12 +1,14 @@
 import { useState, useContext, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
-import { FiPlus, FiSearch, FiEdit2, FiTrash2, FiMail, FiPhone, FiSave, FiX, FiUpload, FiBriefcase, FiLink, FiDollarSign, FiClock } from 'react-icons/fi';
+import { FiPlus, FiSearch, FiEdit2, FiTrash2, FiMail, FiPhone, FiSave, FiX, FiUpload, FiBriefcase, FiLink, FiDollarSign, FiClock, FiExternalLink, FiEye } from 'react-icons/fi';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 import { toast } from 'react-toastify';
 
 const Clients = () => {
   const { userRole } = useContext(AuthContext);
+  const navigate = useNavigate();
   const fileInputRef = useRef(null);
   
   // Only administrators should access this page
@@ -41,7 +43,9 @@ const Clients = () => {
         usedHours: 450,
         monthlyHours: 100,
         rate: 75.00,
-        notes: 'Key client for engineering services'
+        notes: 'Key client for engineering services',
+        contacts: [],
+        projects: []
       },
       {
         id: '2',
@@ -59,7 +63,9 @@ const Clients = () => {
         usedHours: 320,
         monthlyHours: 80,
         rate: 85.00,
-        notes: 'Technology consulting project'
+        notes: 'Technology consulting project',
+        contacts: [],
+        projects: []
       },
       {
         id: '3',
@@ -77,7 +83,9 @@ const Clients = () => {
         usedHours: 600,
         monthlyHours: 50,
         rate: 90.00,
-        notes: 'Contract completed'
+        notes: 'Contract completed',
+        contacts: [],
+        projects: []
       },
       {
         id: '4',
@@ -95,7 +103,9 @@ const Clients = () => {
         usedHours: 800,
         monthlyHours: 200,
         rate: 95.00,
-        notes: 'High priority client'
+        notes: 'High priority client',
+        contacts: [],
+        projects: []
       },
       {
         id: '5',
@@ -113,7 +123,9 @@ const Clients = () => {
         usedHours: 640,
         monthlyHours: 80,
         rate: 80.00,
-        notes: 'Research and development project'
+        notes: 'Research and development project',
+        contacts: [],
+        projects: []
       },
     ];
     return initialValue;
@@ -146,7 +158,9 @@ const Clients = () => {
     usedHours: 0,
     monthlyHours: 0,
     rate: 0,
-    notes: ''
+    notes: '',
+    contacts: [],
+    projects: []
   };
   
   // Filter clients based on search term
@@ -169,6 +183,11 @@ const Clients = () => {
     setCurrentClient({ ...client });
     setEditMode(true);
     setIsModalOpen(true);
+  };
+  
+  // Handle viewing client details
+  const handleViewClient = (clientId) => {
+    navigate(`/clients/${clientId}`);
   };
   
   // Handle saving the client data
@@ -352,13 +371,22 @@ const Clients = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button 
                       className="text-primary-600 dark:text-primary-400 hover:text-primary-900 dark:hover:text-primary-300 mr-3"
+                      onClick={() => handleViewClient(client.id)}
+                      title="View Details"
+                    >
+                      <FiEye />
+                    </button>
+                    <button 
+                      className="text-primary-600 dark:text-primary-400 hover:text-primary-900 dark:hover:text-primary-300 mr-3"
                       onClick={() => handleEditClient(client)}
+                      title="Edit"
                     >
                       <FiEdit2 />
                     </button>
                     <button 
                       className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300"
                       onClick={() => handleDeleteClient(client.id)}
+                      title="Delete"
                     >
                       <FiTrash2 />
                     </button>
