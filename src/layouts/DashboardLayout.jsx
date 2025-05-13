@@ -23,7 +23,7 @@ const DashboardLayout = () => {
   // Admin navigation items
   const adminNavItems = [
     { path: '/', label: 'Dashboard', icon: <FiHome size={20} /> },
-    { path: '/employees', label: 'Employees', icon: <FiUsers size={20} /> },
+    { path: '/employees', label: 'Team Members', icon: <FiUsers size={20} /> },
     { path: '/clients', label: 'Clients', icon: <FiBriefcase size={20} /> },
     { path: '/task-assignment', label: 'Task Assignment', icon: <FiGrid size={20} /> },
     { path: '/payroll', label: 'Payroll', icon: <FiDollarSign size={20} /> },

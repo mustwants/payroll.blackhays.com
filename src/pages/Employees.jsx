@@ -1,12 +1,14 @@
 import { useState, useContext, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
-import { FiUserPlus, FiSearch, FiEdit2, FiTrash2, FiMail, FiPhone, FiSave, FiX, FiUpload, FiUsers } from 'react-icons/fi';
+import { FiUserPlus, FiSearch, FiEdit2, FiTrash2, FiMail, FiPhone, FiSave, FiX, FiUpload, FiUsers, FiEye } from 'react-icons/fi';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 import { toast } from 'react-toastify';
 
 const Employees = () => {
   const { userRole } = useContext(AuthContext);
+  const navigate = useNavigate();
   const fileInputRef = useRef(null);
   
   // Only administrators should access this page
@@ -15,14 +17,14 @@ const Employees = () => {
       <div className="flex flex-col items-center justify-center p-4">
         <h1 className="text-2xl font-bold text-red-600 mb-3">Access Denied</h1>
         <p className="mb-4">
-          You don't have permission to access the employees page.
+          You don't have permission to access the team members page.
         </p>
       </div>
     );
   }
   
-  // Employee data state
-  const [employees, setEmployees] = useState(() => {
+  // Team member data state
+  const [teamMembers, setTeamMembers] = useState(() => {
     const saved = localStorage.getItem('employees');
     const initialValue = saved ? JSON.parse(saved) : [
       {
@@ -40,7 +42,9 @@ const Employees = () => {
         address: '123 Main St, New York, NY',
         emergencyContact: 'Jane Smith - (555) 987-6543',
         payRate: 45.00,
-        contractType: 'Full-time'
+        contractType: 'Full-time',
+        ein: '12-3456789',
+        bio: 'John is a senior developer with over 10 years of experience in web development. He specializes in React and Node.js.'
       },
       {
         id: '2',
@@ -57,7 +61,9 @@ const Employees = () => {
         address: '456 Park Ave, Boston, MA',
         emergencyContact: 'Mike Johnson - (555) 876-5432',
         payRate: 40.00,
-        contractType: 'Full-time'
+        contractType: '1099 Contractor',
+        ein: '98-7654321',
+        bio: 'Lisa is a UI/UX designer with expertise in creating intuitive and visually appealing interfaces. She has worked with multiple Fortune 500 companies.'
       },
       {
         id: '3',
@@ -74,7 +80,9 @@ const Employees = () => {
         address: '789 Broadway, Chicago, IL',
         emergencyContact: 'Sarah Brown - (555) 765-4321',
         payRate: 42.50,
-        contractType: 'Full-time'
+        contractType: '1099 Contractor',
+        ein: '45-6789123',
+        bio: 'Michael is a strategic marketing manager who excels at developing and implementing comprehensive marketing campaigns.'
       },
       {
         id: '4',
@@ -91,7 +99,9 @@ const Employees = () => {
         address: '321 Pine St, San Francisco, CA',
         emergencyContact: 'Tom Wilson - (555) 654-3210',
         payRate: 38.75,
-        contractType: 'Full-time'
+        contractType: '1099 Contractor',
+        ein: '78-9123456',
+        bio: 'Sarah is a detail-oriented financial analyst with a background in accounting and financial modeling.'
       },
       {
         id: '5',
@@ -108,24 +118,26 @@ const Employees = () => {
         address: '654 Oak Dr, Austin, TX',
         emergencyContact: 'Amy Lee - (555) 543-2109',
         payRate: 35.00,
-        contractType: 'Part-time'
+        contractType: '1099 Contractor',
+        ein: '32-1456789',
+        bio: 'David is a results-driven sales professional with a proven track record of exceeding targets and building strong client relationships.'
       },
     ];
     return initialValue;
   });
 
-  // Save employees to localStorage when they change
+  // Save team members to localStorage when they change
   useEffect(() => {
-    localStorage.setItem('employees', JSON.stringify(employees));
-  }, [employees]);
+    localStorage.setItem('employees', JSON.stringify(teamMembers));
+  }, [teamMembers]);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
-  const [currentEmployee, setCurrentEmployee] = useState(null);
+  const [currentTeamMember, setCurrentTeamMember] = useState(null);
   
-  // Initial empty employee template
-  const emptyEmployee = {
+  // Initial empty team member template
+  const emptyTeamMember = {
     id: '',
     name: '',
     email: '',
@@ -140,65 +152,72 @@ const Employees = () => {
     address: '',
     emergencyContact: '',
     payRate: 0,
-    contractType: 'Full-time'
+    contractType: '1099 Contractor',
+    ein: '',
+    bio: ''
   };
   
-  // Filter employees based on search term
-  const filteredEmployees = employees.filter(
-    employee => 
-      employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      employee.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      employee.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      employee.position.toLowerCase().includes(searchTerm.toLowerCase())
+  // Filter team members based on search term
+  const filteredTeamMembers = teamMembers.filter(
+    member => 
+      member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      member.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      member.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      member.position.toLowerCase().includes(searchTerm.toLowerCase())
   );
   
-  // Handle opening the modal for adding a new employee
-  const handleAddEmployee = () => {
-    setCurrentEmployee({ ...emptyEmployee, id: Date.now().toString() });
+  // Handle opening the modal for adding a new team member
+  const handleAddTeamMember = () => {
+    setCurrentTeamMember({ ...emptyTeamMember, id: Date.now().toString() });
     setEditMode(false);
     setIsModalOpen(true);
   };
   
-  // Handle opening the modal for editing an existing employee
-  const handleEditEmployee = (employee) => {
-    setCurrentEmployee({ ...employee });
+  // Handle opening the modal for editing an existing team member
+  const handleEditTeamMember = (member) => {
+    setCurrentTeamMember({ ...member });
     setEditMode(true);
     setIsModalOpen(true);
   };
   
-  // Handle saving the employee data
-  const handleSaveEmployee = () => {
+  // Navigate to the team member detail page
+  const handleViewTeamMember = (memberId) => {
+    navigate(`/employees/${memberId}`);
+  };
+  
+  // Handle saving the team member data
+  const handleSaveTeamMember = () => {
     // Validate form
-    if (!currentEmployee.name || !currentEmployee.email || !currentEmployee.department || !currentEmployee.position) {
+    if (!currentTeamMember.name || !currentTeamMember.email || !currentTeamMember.department || !currentTeamMember.position) {
       toast.error('Please fill out all required fields');
       return;
     }
     
     if (editMode) {
-      // Update existing employee
-      setEmployees(employees.map(emp => emp.id === currentEmployee.id ? currentEmployee : emp));
-      toast.success('Employee updated successfully');
+      // Update existing team member
+      setTeamMembers(teamMembers.map(member => member.id === currentTeamMember.id ? currentTeamMember : member));
+      toast.success('Team member updated successfully');
     } else {
-      // Add new employee
-      setEmployees([...employees, currentEmployee]);
-      toast.success('Employee added successfully');
+      // Add new team member
+      setTeamMembers([...teamMembers, currentTeamMember]);
+      toast.success('Team member added successfully');
     }
     
     setIsModalOpen(false);
   };
   
-  // Handle deleting an employee
-  const handleDeleteEmployee = (id) => {
-    if (window.confirm('Are you sure you want to delete this employee?')) {
-      setEmployees(employees.filter(emp => emp.id !== id));
-      toast.success('Employee deleted successfully');
+  // Handle deleting a team member
+  const handleDeleteTeamMember = (id) => {
+    if (window.confirm('Are you sure you want to delete this team member?')) {
+      setTeamMembers(teamMembers.filter(member => member.id !== id));
+      toast.success('Team member deleted successfully');
     }
   };
   
   // Handle input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setCurrentEmployee({ ...currentEmployee, [name]: value });
+    setCurrentTeamMember({ ...currentTeamMember, [name]: value });
   };
   
   // Handle file upload for avatar
@@ -207,7 +226,7 @@ const Employees = () => {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setCurrentEmployee({ ...currentEmployee, avatar: reader.result });
+        setCurrentTeamMember({ ...currentTeamMember, avatar: reader.result });
       };
       reader.readAsDataURL(file);
     }
@@ -221,7 +240,7 @@ const Employees = () => {
   return (
     <div className="animate-fade-in">
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-4 md:mb-0">Employees</h1>
+        <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-4 md:mb-0">Team Members</h1>
         
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative">
@@ -233,16 +252,16 @@ const Employees = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-              placeholder="Search employees..."
+              placeholder="Search team members..."
             />
           </div>
           
           <Button
             variant="primary"
             className="inline-flex items-center px-4 py-2"
-            onClick={handleAddEmployee}
+            onClick={handleAddTeamMember}
           >
-            <FiUserPlus className="mr-2" /> Add Employee
+            <FiUserPlus className="mr-2" /> Add Team Member
           </Button>
         </div>
       </div>
@@ -253,7 +272,7 @@ const Employees = () => {
             <thead className="bg-gray-50 dark:bg-gray-800">
               <tr>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Employee
+                  Team Member
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                   Contact
@@ -268,7 +287,7 @@ const Employees = () => {
                   Status
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Hire Date
+                  Contract Type
                 </th>
                 <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                   Actions
@@ -276,70 +295,78 @@ const Employees = () => {
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              {filteredEmployees.map((employee) => (
-                <tr key={employee.id}>
+              {filteredTeamMembers.map((member) => (
+                <tr key={member.id}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-10 w-10">
-                        {employee.avatar ? (
-                          <img className="h-10 w-10 rounded-full object-cover" src={employee.avatar} alt={employee.name} />
+                        {member.avatar ? (
+                          <img className="h-10 w-10 rounded-full object-cover" src={member.avatar} alt={member.name} />
                         ) : (
                           <div className="h-10 w-10 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center">
                             <span className="text-primary-800 dark:text-primary-200 font-medium">
-                              {employee.name.split(' ').map(n => n[0]).join('')}
+                              {member.name.split(' ').map(n => n[0]).join('')}
                             </span>
                           </div>
                         )}
                       </div>
                       <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900 dark:text-white">{employee.name}</div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">{employee.position}</div>
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">{member.name}</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">{member.position}</div>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900 dark:text-white flex items-center">
-                      <FiMail className="mr-1" /> {employee.email}
+                      <FiMail className="mr-1" /> {member.email}
                     </div>
                     <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
-                      <FiPhone className="mr-1" /> {employee.phone}
+                      <FiPhone className="mr-1" /> {member.phone}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900 dark:text-white">{employee.department}</div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">{employee.contractType}</div>
+                    <div className="text-sm text-gray-900 dark:text-white">{member.department}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900 dark:text-white">{employee.hoursUsed} / {employee.hoursAllocated}</div>
+                    <div className="text-sm text-gray-900 dark:text-white">{member.hoursUsed} / {member.hoursAllocated}</div>
                     <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mt-1">
                       <div 
                         className="bg-primary-600 h-2.5 rounded-full" 
-                        style={{ width: `${Math.min(100, (employee.hoursUsed / employee.hoursAllocated) * 100)}%` }}
+                        style={{ width: `${Math.min(100, (member.hoursUsed / member.hoursAllocated) * 100)}%` }}
                       ></div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      employee.status === 'active' 
+                      member.status === 'active' 
                         ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
                         : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
                     }`}>
-                      {employee.status.charAt(0).toUpperCase() + employee.status.slice(1)}
+                      {member.status.charAt(0).toUpperCase() + member.status.slice(1)}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                    {new Date(employee.hireDate).toLocaleDateString()}
+                    {member.contractType}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button 
                       className="text-primary-600 dark:text-primary-400 hover:text-primary-900 dark:hover:text-primary-300 mr-3"
-                      onClick={() => handleEditEmployee(employee)}
+                      onClick={() => handleViewTeamMember(member.id)}
+                      title="View Details"
+                    >
+                      <FiEye />
+                    </button>
+                    <button 
+                      className="text-primary-600 dark:text-primary-400 hover:text-primary-900 dark:hover:text-primary-300 mr-3"
+                      onClick={() => handleEditTeamMember(member)}
+                      title="Edit"
                     >
                       <FiEdit2 />
                     </button>
                     <button 
                       className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300"
-                      onClick={() => handleDeleteEmployee(employee.id)}
+                      onClick={() => handleDeleteTeamMember(member.id)}
+                      title="Delete"
                     >
                       <FiTrash2 />
                     </button>
@@ -351,7 +378,7 @@ const Employees = () => {
         </div>
       </Card>
 
-      {/* Employee Modal */}
+      {/* Team Member Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
           <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
@@ -364,16 +391,16 @@ const Employees = () => {
                 <div className="sm:flex sm:items-start">
                   <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
                     <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white" id="modal-title">
-                      {editMode ? 'Edit Employee' : 'Add New Employee'}
+                      {editMode ? 'Edit Team Member' : 'Add New Team Member'}
                     </h3>
                     <div className="mt-4 grid grid-cols-6 gap-6">
                       {/* Avatar upload */}
                       <div className="col-span-6 sm:col-span-6 flex justify-center">
                         <div className="relative">
-                          {currentEmployee.avatar ? (
+                          {currentTeamMember.avatar ? (
                             <img 
-                              src={currentEmployee.avatar} 
-                              alt="Employee Avatar" 
+                              src={currentTeamMember.avatar} 
+                              alt="Team Member Avatar" 
                               className="w-24 h-24 rounded-full object-cover border-2 border-gray-300 dark:border-gray-600"
                             />
                           ) : (
@@ -407,7 +434,7 @@ const Employees = () => {
                           type="text"
                           name="name"
                           id="name"
-                          value={currentEmployee.name}
+                          value={currentTeamMember.name}
                           onChange={handleInputChange}
                           required
                           className="mt-1 focus:ring-primary-500 focus:border-primary-500 block w-full shadow-sm sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
@@ -422,7 +449,7 @@ const Employees = () => {
                           type="email"
                           name="email"
                           id="email"
-                          value={currentEmployee.email}
+                          value={currentTeamMember.email}
                           onChange={handleInputChange}
                           required
                           className="mt-1 focus:ring-primary-500 focus:border-primary-500 block w-full shadow-sm sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
@@ -437,9 +464,24 @@ const Employees = () => {
                           type="tel"
                           name="phone"
                           id="phone"
-                          value={currentEmployee.phone}
+                          value={currentTeamMember.phone}
                           onChange={handleInputChange}
                           className="mt-1 focus:ring-primary-500 focus:border-primary-500 block w-full shadow-sm sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
+                        />
+                      </div>
+
+                      <div className="col-span-6 sm:col-span-3">
+                        <label htmlFor="ein" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                          EIN / Tax ID 
+                        </label>
+                        <input
+                          type="text"
+                          name="ein"
+                          id="ein"
+                          value={currentTeamMember.ein}
+                          onChange={handleInputChange}
+                          className="mt-1 focus:ring-primary-500 focus:border-primary-500 block w-full shadow-sm sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
+                          placeholder="XX-XXXXXXX"
                         />
                       </div>
 
@@ -451,7 +493,7 @@ const Employees = () => {
                           type="date"
                           name="hireDate"
                           id="hireDate"
-                          value={currentEmployee.hireDate}
+                          value={currentTeamMember.hireDate}
                           onChange={handleInputChange}
                           className="mt-1 focus:ring-primary-500 focus:border-primary-500 block w-full shadow-sm sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
                         />
@@ -465,7 +507,7 @@ const Employees = () => {
                           type="text"
                           name="department"
                           id="department"
-                          value={currentEmployee.department}
+                          value={currentTeamMember.department}
                           onChange={handleInputChange}
                           required
                           className="mt-1 focus:ring-primary-500 focus:border-primary-500 block w-full shadow-sm sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
@@ -480,7 +522,7 @@ const Employees = () => {
                           type="text"
                           name="position"
                           id="position"
-                          value={currentEmployee.position}
+                          value={currentTeamMember.position}
                           onChange={handleInputChange}
                           required
                           className="mt-1 focus:ring-primary-500 focus:border-primary-500 block w-full shadow-sm sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
@@ -494,7 +536,7 @@ const Employees = () => {
                         <select
                           id="status"
                           name="status"
-                          value={currentEmployee.status}
+                          value={currentTeamMember.status}
                           onChange={handleInputChange}
                           className="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm text-gray-900 dark:text-white"
                         >
@@ -512,13 +554,13 @@ const Employees = () => {
                         <select
                           id="contractType"
                           name="contractType"
-                          value={currentEmployee.contractType}
+                          value={currentTeamMember.contractType}
                           onChange={handleInputChange}
                           className="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm text-gray-900 dark:text-white"
                         >
+                          <option value="1099 Contractor">1099 Contractor</option>
                           <option value="Full-time">Full-time</option>
                           <option value="Part-time">Part-time</option>
-                          <option value="Contract">Contract</option>
                           <option value="Temporary">Temporary</option>
                         </select>
                       </div>
@@ -531,7 +573,7 @@ const Employees = () => {
                           type="number"
                           name="hoursAllocated"
                           id="hoursAllocated"
-                          value={currentEmployee.hoursAllocated}
+                          value={currentTeamMember.hoursAllocated}
                           onChange={handleInputChange}
                           min="0"
                           step="1"
@@ -547,7 +589,7 @@ const Employees = () => {
                           type="number"
                           name="hoursUsed"
                           id="hoursUsed"
-                          value={currentEmployee.hoursUsed}
+                          value={currentTeamMember.hoursUsed}
                           onChange={handleInputChange}
                           min="0"
                           step="1"
@@ -563,7 +605,7 @@ const Employees = () => {
                           type="text"
                           name="address"
                           id="address"
-                          value={currentEmployee.address}
+                          value={currentTeamMember.address}
                           onChange={handleInputChange}
                           className="mt-1 focus:ring-primary-500 focus:border-primary-500 block w-full shadow-sm sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
                         />
@@ -577,7 +619,7 @@ const Employees = () => {
                           type="text"
                           name="emergencyContact"
                           id="emergencyContact"
-                          value={currentEmployee.emergencyContact}
+                          value={currentTeamMember.emergencyContact}
                           onChange={handleInputChange}
                           className="mt-1 focus:ring-primary-500 focus:border-primary-500 block w-full shadow-sm sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
                         />
@@ -591,12 +633,27 @@ const Employees = () => {
                           type="number"
                           name="payRate"
                           id="payRate"
-                          value={currentEmployee.payRate}
+                          value={currentTeamMember.payRate}
                           onChange={handleInputChange}
                           min="0"
                           step="0.01"
                           className="mt-1 focus:ring-primary-500 focus:border-primary-500 block w-full shadow-sm sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
                         />
+                      </div>
+                      
+                      <div className="col-span-6">
+                        <label htmlFor="bio" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                          About / Bio
+                        </label>
+                        <textarea
+                          name="bio"
+                          id="bio"
+                          rows="3"
+                          value={currentTeamMember.bio}
+                          onChange={handleInputChange}
+                          className="mt-1 focus:ring-primary-500 focus:border-primary-500 block w-full shadow-sm sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
+                          placeholder="Brief bio or notes about this team member"
+                        ></textarea>
                       </div>
                     </div>
                   </div>
@@ -606,7 +663,7 @@ const Employees = () => {
                 <button
                   type="button"
                   className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm"
-                  onClick={handleSaveEmployee}
+                  onClick={handleSaveTeamMember}
                 >
                   <FiSave className="mr-2" /> {editMode ? 'Update' : 'Save'}
                 </button>
