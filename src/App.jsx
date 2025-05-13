@@ -84,9 +84,6 @@ function App() {
               <Route path="crm-contacts" element={<CrmContacts />} />
             </Route>
             
-            {/* Redirect from root to dashboard */}
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            
             {/* 404 route */}
             <Route path="*" element={<PageNotFound />} />
           </Routes>
