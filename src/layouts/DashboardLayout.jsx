@@ -1,11 +1,14 @@
 import { useState, useContext } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
+import { ThemeContext } from '../contexts/ThemeContext';
 import { FiHome, FiUsers, FiDollarSign, FiBarChart2, FiSettings, FiMenu, FiX, FiLogOut, FiClock, FiBook } from 'react-icons/fi';
+import ThemeToggle from '../components/ui/ThemeToggle';
 
 const DashboardLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { currentUser, userRole, logout } = useContext(AuthContext);
+  const { darkMode } = useContext(ThemeContext);
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -37,7 +40,7 @@ const DashboardLayout = () => {
   const navItems = userRole === 'admin' ? adminNavItems : employeeNavItems;
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
       {/* Sidebar overlay for mobile */}
       <div 
         className={`fixed inset-0 z-20 transition-opacity duration-300 ${
@@ -49,12 +52,12 @@ const DashboardLayout = () => {
 
       {/* Sidebar */}
       <div 
-        className={`fixed inset-y-0 left-0 z-30 w-64 bg-primary-800 text-white transform transition duration-300 ease-in-out md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-30 w-64 bg-primary-800 dark:bg-gray-800 text-white transform transition duration-300 ease-in-out md:translate-x-0 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="flex items-center justify-between px-4 py-6">
-          <div className="font-bold text-xl">Black Hays</div>
+          <div className="font-bold text-xl">BlackHays</div>
           <button 
             className="md:hidden text-white focus:outline-none" 
             onClick={toggleSidebar}
@@ -72,8 +75,8 @@ const DashboardLayout = () => {
                   className={({ isActive }) => 
                     `flex items-center px-4 py-3 rounded-lg transition ${
                       isActive 
-                        ? 'bg-primary-700 text-white' 
-                        : 'text-gray-300 hover:bg-primary-700 hover:text-white'
+                        ? 'bg-primary-700 dark:bg-gray-700 text-white' 
+                        : 'text-gray-300 hover:bg-primary-700 dark:hover:bg-gray-700 hover:text-white'
                     }`
                   }
                   onClick={() => setSidebarOpen(false)}
@@ -87,7 +90,7 @@ const DashboardLayout = () => {
         </nav>
 
         {/* User section at bottom of sidebar */}
-        <div className="absolute bottom-0 w-full px-4 py-4 border-t border-primary-700">
+        <div className="absolute bottom-0 w-full px-4 py-4 border-t border-primary-700 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
               <p className="font-medium">{currentUser?.name}</p>
@@ -95,7 +98,7 @@ const DashboardLayout = () => {
             </div>
             <button 
               onClick={handleLogout}
-              className="p-2 rounded-full text-white hover:bg-primary-700 transition"
+              className="p-2 rounded-full text-white hover:bg-primary-700 dark:hover:bg-gray-700 transition"
               aria-label="Logout"
             >
               <FiLogOut size={20} />
@@ -107,17 +110,18 @@ const DashboardLayout = () => {
       {/* Main content */}
       <div className="flex-1 flex flex-col md:ml-64">
         {/* Header */}
-        <header className="bg-white shadow z-10">
+        <header className="bg-white dark:bg-gray-800 shadow z-10">
           <div className="px-4 py-4 flex items-center justify-between">
             <button 
-              className="md:hidden text-gray-600 focus:outline-none" 
+              className="md:hidden text-gray-600 dark:text-gray-200 focus:outline-none" 
               onClick={toggleSidebar}
             >
               <FiMenu size={24} />
             </button>
-            <div className="md:hidden font-bold">Black Hays</div>
-            <div className="flex items-center">
-              <span className="mr-2 text-sm text-gray-600 hidden md:block">
+            <div className="md:hidden font-bold">BlackHays</div>
+            <div className="flex items-center space-x-4">
+              <ThemeToggle />
+              <span className="mr-2 text-sm text-gray-600 dark:text-gray-200 hidden md:block">
                 Welcome, {currentUser?.name}
               </span>
               {currentUser?.avatar && (
@@ -132,14 +136,14 @@ const DashboardLayout = () => {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-4 md:p-6">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-gray-900 p-4 md:p-6">
           <Outlet />
         </main>
 
         {/* Footer */}
-        <footer className="bg-white py-3 px-4 shadow-inner">
-          <div className="text-center text-sm text-gray-500">
-            &copy; {new Date().getFullYear()} Black Hays Payroll Management System
+        <footer className="bg-white dark:bg-gray-800 py-3 px-4 shadow-inner border-t border-gray-200 dark:border-gray-700">
+          <div className="text-center text-sm text-gray-500 dark:text-gray-400">
+            &copy; {new Date().getFullYear()} BlackHays Payroll Management System
           </div>
         </footer>
       </div>
