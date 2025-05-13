@@ -1,0 +1,224 @@
+# Black Hays Payroll Management System - Microservices Architecture
+
+## Overview
+This document outlines the recommended folder structure for the Black Hays Payroll Management System, organized as a microservices architecture for maintainability, security, and scalability.
+
+## Root Project Structure
+```
+/payroll-management-system
+├── package.json           # Main package dependencies
+├── vite.config.js         # Vite configuration
+├── .env                   # Environment variables (gitignored)
+├── .env.example           # Example environment variables
+├── .gitignore             # Git ignore file
+├── README.md              # Project documentation
+├── public/                # Static assets
+│   └── favicon.svg        # Favicon
+├── src/                   # Source code
+│   ├── main.jsx           # Entry point
+│   ├── App.jsx            # Root component
+│   ├── api/               # API integration layer
+│   ├── assets/            # Static assets
+│   ├── components/        # Reusable components
+│   ├── contexts/          # React contexts
+│   ├── hooks/             # Custom React hooks
+│   ├── layouts/           # Layout components
+│   ├── microservices/     # Microservices modules
+│   ├── pages/             # Page components
+│   ├── services/          # Service layers
+│   ├── store/             # State management
+│   ├── styles/            # Global styles
+│   └── utils/             # Utility functions
+└── tests/                 # Test files
+```
+
+## Microservices Architecture
+Each functional domain is encapsulated in its own microservice:
+
+```
+/src/microservices/
+├── auth/                  # Authentication microservice
+│   ├── api/               # Auth API calls
+│   ├── components/        # Auth-specific components
+│   ├── context/           # Auth context
+│   ├── hooks/             # Auth-related hooks
+│   ├── pages/             # Auth pages (login, register)
+│   ├── services/          # Auth services
+│   └── utils/             # Auth utilities
+├── employees/             # Employee management microservice
+│   ├── api/               # Employee API calls
+│   ├── components/        # Employee-specific components
+│   ├── context/           # Employee context
+│   ├── hooks/             # Employee-related hooks
+│   ├── pages/             # Employee pages
+│   ├── services/          # Employee services
+│   └── utils/             # Employee utilities
+├── clients/               # Client management microservice
+│   ├── api/               # Client API calls
+│   ├── components/        # Client-specific components
+│   ├── context/           # Client context
+│   ├── hooks/             # Client-related hooks
+│   ├── pages/             # Client pages
+│   ├── services/          # Client services
+│   └── utils/             # Client utilities
+├── timeTracking/          # Time tracking microservice
+│   ├── api/               # Time tracking API calls
+│   ├── components/        # Time tracking components
+│   ├── context/           # Time tracking context
+│   ├── hooks/             # Time tracking hooks
+│   ├── pages/             # Time tracking pages
+│   ├── services/          # Time tracking services
+│   └── utils/             # Time tracking utilities
+├── taskAssignment/        # Task assignment microservice
+│   ├── api/               # Task assignment API calls
+│   ├── components/        # Task assignment components
+│   ├── context/           # Task assignment context
+│   ├── hooks/             # Task assignment hooks
+│   ├── pages/             # Task assignment pages
+│   ├── services/          # Task assignment services
+│   └── utils/             # Task assignment utilities
+├── payroll/               # Payroll processing microservice
+│   ├── api/               # Payroll API calls
+│   ├── components/        # Payroll-specific components
+│   ├── context/           # Payroll context
+│   ├── hooks/             # Payroll-related hooks
+│   ├── pages/             # Payroll pages
+│   ├── services/          # Payroll services
+│   └── utils/             # Payroll utilities
+├── reports/               # Reporting microservice
+│   ├── api/               # Reports API calls
+│   ├── components/        # Report-specific components
+│   ├── hooks/             # Report-related hooks
+│   ├── pages/             # Report pages
+│   ├── services/          # Report services
+│   └── utils/             # Report utilities
+└── companyInfo/           # Company information microservice
+    ├── api/               # Company info API calls
+    ├── components/        # Company info components
+    ├── context/           # Company info context
+    ├── hooks/             # Company info hooks
+    ├── pages/             # Company info pages
+    ├── services/          # Company info services
+    └── utils/             # Company info utilities
+```
+
+## Shared Components
+```
+/src/components/
+├── ui/                    # UI component library
+│   ├── Button.jsx         # Button component
+│   ├── Card.jsx           # Card component
+│   ├── Modal.jsx          # Modal component
+│   ├── Table.jsx          # Table component
+│   ├── Form/              # Form components
+│   ├── Inputs/            # Input components
+│   ├── Feedback/          # Feedback components
+│   └── Layout/            # Layout components
+├── charts/                # Chart components
+├── tables/                # Table components
+├── forms/                 # Form components
+├── modals/                # Modal components
+└── navigation/            # Navigation components
+```
+
+## API Layer
+```
+/src/api/
+├── axios.js               # Axios instance configuration
+├── apiClient.js           # API client wrapper
+├── endpoints.js           # API endpoints
+├── interceptors.js        # Request/response interceptors
+└── mock/                  # Mock API for development
+```
+
+## Services
+```
+/src/services/
+├── authService.js         # Authentication service
+├── storageService.js      # Local storage service
+├── notificationService.js # Notification service
+├── logService.js          # Logging service
+└── validationService.js   # Validation service
+```
+
+## State Management
+```
+/src/store/
+├── index.js               # Store configuration
+├── actions/               # Action creators
+├── reducers/              # Reducers
+├── selectors/             # Selectors
+└── middleware/            # Custom middleware
+```
+
+## Backend Services Integration (Microservices API)
+```
+/backend/
+├── auth-service/          # Authentication API
+├── employee-service/      # Employee management API
+├── client-service/        # Client management API
+├── timetracking-service/  # Time tracking API
+├── task-service/          # Task management API
+├── payroll-service/       # Payroll processing API
+├── report-service/        # Reporting API
+├── company-service/       # Company information API
+└── notification-service/  # Notification API
+```
+
+## Security Considerations
+1. **Authentication**: JWT-based authentication with refresh tokens
+2. **Authorization**: Role-based access control (RBAC)
+3. **Data Protection**: All sensitive data encrypted at rest and in transit
+4. **API Security**: Rate limiting, CORS configuration, and input validation
+5. **Environment Variables**: Sensitive configuration in environment variables
+
+## Responsiveness Strategy
+1. **Mobile-First Design**: UI components designed for mobile first
+2. **TailwindCSS**: Utilizing Tailwind for responsive design
+3. **Media Queries**: Custom breakpoints for various screen sizes
+4. **Responsive Layout Components**: Flex and grid-based layouts
+5. **Adaptive UX**: Different navigation patterns for different devices
+
+## Data Flow Architecture
+1. **API Layer**: Centralized API calls through service modules
+2. **Context API**: React Context for state management within microservices
+3. **Custom Hooks**: Business logic encapsulated in custom hooks
+4. **Service Layer**: Core business logic in service modules
+5. **Component Props**: Clear data flow between components
+
+## Testing Strategy
+```
+/tests/
+├── unit/                  # Unit tests
+├── integration/           # Integration tests
+├── e2e/                   # End-to-end tests
+├── fixtures/              # Test fixtures
+└── mocks/                 # Test mocks
+```
+
+## Deployment Architecture
+1. **Frontend**: Deployed to CDN (Netlify/Vercel)
+2. **Microservices**: Each service deployed as independent API
+3. **Database**: Separated databases per service
+4. **Caching**: Redis for performance optimization
+5. **CI/CD**: Automated testing and deployment pipelines
+
+## Benefits of This Architecture
+
+1. **Maintainability**: Each microservice can be maintained independently
+2. **Scalability**: Services can be scaled based on individual needs
+3. **Testability**: Isolated services are easier to test
+4. **Deployment**: Independent deployment of services
+5. **Team Organization**: Teams can work on different services simultaneously
+6. **Technology Diversity**: Different services can use different technologies as needed
+7. **Resilience**: Failure in one service doesn't bring down the entire system
+8. **Security**: Isolated services reduce attack surface
+
+## Implementation Notes
+
+1. Start with a monolithic approach but designed with microservices in mind
+2. Extract services gradually as the application grows
+3. Implement API gateway pattern for frontend to communicate with microservices
+4. Use consistent error handling and logging across all services
+5. Implement comprehensive monitoring and alerting
+6. Document all APIs with Swagger/OpenAPI
