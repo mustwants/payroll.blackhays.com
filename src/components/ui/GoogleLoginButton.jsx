@@ -22,3 +22,24 @@ const GoogleLoginButton = ({ onSuccess, onError, disabled }) => {
 };
 
 export default GoogleLoginButton;
+
+import { GoogleLogin } from '@react-oauth/google';
+
+export default function GoogleLoginButton() {
+  return (
+    <GoogleLogin
+      onSuccess={credentialResponse => {
+        const token = credentialResponse.credential;
+        // Send token to backend
+        fetch('/api/auth/google', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token }),
+        });
+      }}
+      onError={() => {
+        alert('Login Failed');
+      }}
+    />
+  );
+}
