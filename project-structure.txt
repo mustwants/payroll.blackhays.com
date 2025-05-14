@@ -1,7 +1,7 @@
-# Black Hays Payroll Management System - Microservices Architecture
+# Black Hays Payroll Management System - Frontend Architecture
 
 ## Overview
-This document outlines the recommended folder structure for the Black Hays Payroll Management System, organized as a microservices architecture for maintainability, security, and scalability.
+This document outlines the folder structure for the Black Hays Payroll Management System, a React-based frontend application using client-side storage.
 
 ## Root Project Structure
 ```
@@ -17,7 +17,7 @@ This document outlines the recommended folder structure for the Black Hays Payro
 ├── src/                   # Source code
 │   ├── main.jsx           # Entry point
 │   ├── App.jsx            # Root component
-│   ├── api/               # API integration layer
+│   ├── api/               # API integration layer (client-side)
 │   ├── assets/            # Static assets
 │   ├── components/        # Reusable components
 │   ├── contexts/          # React contexts
@@ -25,80 +25,72 @@ This document outlines the recommended folder structure for the Black Hays Payro
 │   ├── layouts/           # Layout components
 │   ├── microservices/     # Microservices modules
 │   ├── pages/             # Page components
-│   ├── services/          # Service layers
+│   ├── services/          # Service layers (client-side)
 │   ├── store/             # State management
 │   ├── styles/            # Global styles
 │   └── utils/             # Utility functions
 └── tests/                 # Test files
 ```
 
-## Microservices Architecture
-Each functional domain is encapsulated in its own microservice:
+## Frontend Architecture
+The application is organized as a modular frontend with a microservices-inspired structure, using client-side storage (localStorage) to persist data for demonstration purposes. Each functional domain has its own dedicated module with components, state management, and logic.
 
 ```
 /src/microservices/
-├── auth/                  # Authentication microservice
-│   ├── api/               # Auth API calls
+├── auth/                  # Authentication module
 │   ├── components/        # Auth-specific components
 │   ├── context/           # Auth context
 │   ├── hooks/             # Auth-related hooks
 │   ├── pages/             # Auth pages (login, register)
-│   ├── services/          # Auth services
+│   ├── services/          # Auth services (client-side)
 │   └── utils/             # Auth utilities
-├── employees/             # Employee management microservice
-│   ├── api/               # Employee API calls
+├── employees/             # Employee management module
 │   ├── components/        # Employee-specific components
 │   ├── context/           # Employee context
 │   ├── hooks/             # Employee-related hooks
 │   ├── pages/             # Employee pages
-│   ├── services/          # Employee services
+│   ├── services/          # Employee services (client-side)
 │   └── utils/             # Employee utilities
-├── clients/               # Client management microservice
-│   ├── api/               # Client API calls
+├── clients/               # Client management module
 │   ├── components/        # Client-specific components
 │   ├── context/           # Client context
 │   ├── hooks/             # Client-related hooks
 │   ├── pages/             # Client pages
-│   ├── services/          # Client services
+│   ├── services/          # Client services (client-side)
 │   └── utils/             # Client utilities
-├── timeTracking/          # Time tracking microservice
-│   ├── api/               # Time tracking API calls
+├── timeTracking/          # Time tracking module
 │   ├── components/        # Time tracking components
 │   ├── context/           # Time tracking context
 │   ├── hooks/             # Time tracking hooks
 │   ├── pages/             # Time tracking pages
-│   ├── services/          # Time tracking services
+│   ├── services/          # Time tracking services (client-side)
 │   └── utils/             # Time tracking utilities
-├── taskAssignment/        # Task assignment microservice
-│   ├── api/               # Task assignment API calls
+├── taskAssignment/        # Task assignment module
 │   ├── components/        # Task assignment components
 │   ├── context/           # Task assignment context
 │   ├── hooks/             # Task assignment hooks
 │   ├── pages/             # Task assignment pages
-│   ├── services/          # Task assignment services
+│   ├── services/          # Task assignment services (client-side)
 │   └── utils/             # Task assignment utilities
-├── payroll/               # Payroll processing microservice
-│   ├── api/               # Payroll API calls
+├── payroll/               # Payroll processing module
 │   ├── components/        # Payroll-specific components
 │   ├── context/           # Payroll context
 │   ├── hooks/             # Payroll-related hooks
 │   ├── pages/             # Payroll pages
-│   ├── services/          # Payroll services
+│   ├── services/          # Payroll services (client-side)
 │   └── utils/             # Payroll utilities
-├── reports/               # Reporting microservice
-│   ├── api/               # Reports API calls
+├── reports/               # Reporting module
 │   ├── components/        # Report-specific components
 │   ├── hooks/             # Report-related hooks
 │   ├── pages/             # Report pages
-│   ├── services/          # Report services
+│   ├── services/          # Report services (client-side)
 │   └── utils/             # Report utilities
-└── companyInfo/           # Company information microservice
-    ├── api/               # Company info API calls
+└── companyInfo/           # Company information module
     ├── components/        # Company info components
     ├── context/           # Company info context
     ├── hooks/             # Company info hooks
     ├── pages/             # Company info pages
-    ├── services/          # Company info services
+    ├── services/          # Company info services (client-side)
     └── utils/             # Company info utilities
 ```
 
@@ -121,104 +113,43 @@ Each functional domain is encapsulated in its own microservice:
 └── navigation/            # Navigation components
 ```
 
-## API Layer
-```
-/src/api/
-├── axios.js               # Axios instance configuration
-├── apiClient.js           # API client wrapper
-├── endpoints.js           # API endpoints
-├── interceptors.js        # Request/response interceptors
-└── mock/                  # Mock API for development
-```
-
-## Services
+## Client-side Services
 ```
 /src/services/
-├── authService.js         # Authentication service
+├── authService.js         # Authentication service (client-side)
 ├── storageService.js      # Local storage service
 ├── notificationService.js # Notification service
 ├── logService.js          # Logging service
-└── validationService.js   # Validation service
+├── validationService.js   # Validation service
+└── googleScriptService.js # Google Apps Script integration
 ```
 
-## State Management
-```
-/src/store/
-├── index.js               # Store configuration
-├── actions/               # Action creators
-├── reducers/              # Reducers
-├── selectors/             # Selectors
-└── middleware/            # Custom middleware
-```
+## External Integrations
+The application is designed to interface with:
 
-## Backend Services Integration (Microservices API)
-```
-/backend/
-├── auth-service/          # Authentication API
-├── employee-service/      # Employee management API
-├── client-service/        # Client management API
-├── timetracking-service/  # Time tracking API
-├── task-service/          # Task management API
-├── payroll-service/       # Payroll processing API
-├── report-service/        # Reporting API
-├── company-service/       # Company information API
-└── notification-service/  # Notification API
-```
+1. **Google Authentication**: For user login via Google OAuth
+2. **Google Apps Script**: For optional data persistence and spreadsheet integration
+
+## Data Flow Architecture
+1. **Client-side Storage**: Using localStorage for persistence in the demo environment
+2. **Context API**: React Context for state management within modules
+3. **Custom Hooks**: Business logic encapsulated in custom hooks
+4. **Service Layer**: Core business logic in service modules
 
 ## Security Considerations
-1. **Authentication**: JWT-based authentication with refresh tokens
-2. **Authorization**: Role-based access control (RBAC)
-3. **Data Protection**: All sensitive data encrypted at rest and in transit
-4. **API Security**: Rate limiting, CORS configuration, and input validation
-5. **Environment Variables**: Sensitive configuration in environment variables
+1. **Authentication**: Mock JWT-based authentication for demo purposes
+2. **Authorization**: Role-based access control (admin vs. employee)
+3. **Domain Restriction**: Limiting sign-in to specific email domains
 
 ## Responsiveness Strategy
 1. **Mobile-First Design**: UI components designed for mobile first
 2. **TailwindCSS**: Utilizing Tailwind for responsive design
 3. **Media Queries**: Custom breakpoints for various screen sizes
-4. **Responsive Layout Components**: Flex and grid-based layouts
-5. **Adaptive UX**: Different navigation patterns for different devices
 
-## Data Flow Architecture
-1. **API Layer**: Centralized API calls through service modules
-2. **Context API**: React Context for state management within microservices
-3. **Custom Hooks**: Business logic encapsulated in custom hooks
-4. **Service Layer**: Core business logic in service modules
-5. **Component Props**: Clear data flow between components
+## Progressive Enhancement Notes
+In a production environment, this frontend application would be connected to:
 
-## Testing Strategy
-```
-/tests/
-├── unit/                  # Unit tests
-├── integration/           # Integration tests
-├── e2e/                   # End-to-end tests
-├── fixtures/              # Test fixtures
-└── mocks/                 # Test mocks
-```
-
-## Deployment Architecture
-1. **Frontend**: Deployed to CDN (Netlify/Vercel)
-2. **Microservices**: Each service deployed as independent API
-3. **Database**: Separated databases per service
-4. **Caching**: Redis for performance optimization
-5. **CI/CD**: Automated testing and deployment pipelines
-
-## Benefits of This Architecture
-
-1. **Maintainability**: Each microservice can be maintained independently
-2. **Scalability**: Services can be scaled based on individual needs
-3. **Testability**: Isolated services are easier to test
-4. **Deployment**: Independent deployment of services
-5. **Team Organization**: Teams can work on different services simultaneously
-6. **Technology Diversity**: Different services can use different technologies as needed
-7. **Resilience**: Failure in one service doesn't bring down the entire system
-8. **Security**: Isolated services reduce attack surface
-
-## Implementation Notes
-
-1. Start with a monolithic approach but designed with microservices in mind
-2. Extract services gradually as the application grows
-3. Implement API gateway pattern for frontend to communicate with microservices
-4. Use consistent error handling and logging across all services
-5. Implement comprehensive monitoring and alerting
-6. Document all APIs with Swagger/OpenAPI
+1. **Backend APIs**: RESTful or GraphQL services for data persistence
+2. **Authentication Provider**: OAuth integration for secure user authentication
+3. **Database**: Proper database instead of localStorage
+4. **Cloud Hosting**: Deployment to cloud provider with CI/CD
