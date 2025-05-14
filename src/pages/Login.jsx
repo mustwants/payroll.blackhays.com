@@ -3,8 +3,9 @@ import { useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
 import { ThemeContext } from '../contexts/ThemeContext';
 import { toast } from 'react-toastify';
-import { FiUser, FiLock, FiSun, FiMoon } from 'react-icons/fi';
-import { FaGoogle } from 'react-icons/fa';
+import { FiUser, FiLock, FiSun, FiMoon, FiAlertCircle } from 'react-icons/fi';
+import { FcGoogle } from 'react-icons/fc';
+import { GoogleLogin } from '@react-oauth/google';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -13,48 +14,8 @@ const Login = () => {
   
   const navigate = useNavigate();
   const location = useLocation();
-  const { currentUser, login, googleLogin, error } = useContext(AuthContext);
+  const { currentUser, login, googleLogin, error, isEmailDomainAllowed } = useContext(AuthContext);
   const { darkMode, toggleTheme } = useContext(ThemeContext);
-  
-  // Initialize Google API
-  useEffect(() => {
-    // Load Google API script
-    const loadGoogleScript = () => {
-      const script = document.createElement('script');
-      script.src = 'https://accounts.google.com/gsi/client';
-      script.async = true;
-      script.defer = true;
-      document.body.appendChild(script);
-      
-      return () => {
-        document.body.removeChild(script);
-      };
-    };
-    
-    loadGoogleScript();
-  }, []);
-  
-  // Handle Google Sign-in success
-  const handleGoogleSuccess = (response) => {
-    googleLogin(response)
-      .then((success) => {
-        if (success) {
-          const from = location.state?.from?.pathname || '/';
-          navigate(from, { replace: true });
-          toast.success('Google login successful');
-        }
-      })
-      .catch((err) => {
-        toast.error('Google login failed. Please try again.');
-        console.error('Google login error:', err);
-      });
-  };
-  
-  // Handle Google Sign-in failure
-  const handleGoogleFailure = (error) => {
-    console.error('Google Sign-in failed:', error);
-    toast.error('Google login failed. Please try again.');
-  };
   
   // Redirect if already logged in
   if (currentUser) {
@@ -78,6 +39,12 @@ const Login = () => {
       return;
     }
     
+    // Domain validation
+    if (!isEmailDomainAllowed(email)) {
+      toast.error('Login is restricted to Black Hays Group email accounts only');
+      return;
+    }
+    
     setLoading(true);
     
     try {
@@ -95,6 +62,26 @@ const Login = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Handle Google login success
+  const handleGoogleLoginSuccess = async (credentialResponse) => {
+    try {
+      const success = await googleLogin(credentialResponse);
+      if (success) {
+        const from = location.state?.from?.pathname || '/';
+        navigate(from, { replace: true });
+        toast.success('Google login successful');
+      }
+    } catch (err) {
+      toast.error('Google login failed: ' + (err.message || 'Unknown error'));
+      console.error('Google login error:', err);
+    }
+  };
+
+  // Handle Google login error
+  const handleGoogleLoginError = () => {
+    toast.error('Google sign-in was unsuccessful. Please try again.');
   };
   
   return (
@@ -120,12 +107,52 @@ const Login = () => {
             Payroll Management System
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-            Please sign in to your account
+            Please sign in with your Black Hays account
           </p>
         </div>
         
+        <div className="bg-yellow-50 dark:bg-yellow-900/30 border-l-4 border-yellow-400 p-4 mb-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <FiAlertCircle className="h-5 w-5 text-yellow-400" aria-hidden="true" />
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-yellow-700 dark:text-yellow-200">
+                Access is restricted to Black Hays Group email accounts only.
+              </p>
+            </div>
+          </div>
+        </div>
+        
         <div className="mt-8 bg-white dark:bg-gray-800 py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          <form className="space-y-6" onSubmit={handleSubmit}>
+          {/* Google Sign-In Button */}
+          <div className="mb-6">
+            <div className="w-full flex justify-center">
+              <GoogleLogin
+                onSuccess={handleGoogleLoginSuccess}
+                onError={handleGoogleLoginError}
+                size="large"
+                width="280px"
+                text="signin_with"
+                shape="rectangular"
+                logo_alignment="center"
+                useOneTap={false}
+              />
+            </div>
+          </div>
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+                Or sign in with email
+              </span>
+            </div>
+          </div>
+          
+          <form className="mt-6 space-y-6" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Email Address
@@ -143,7 +170,7 @@ const Login = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="appearance-none block w-full pl-10 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  placeholder="Enter your email"
+                  placeholder="your.name@blackhays.com"
                 />
               </div>
             </div>
@@ -200,39 +227,6 @@ const Login = () => {
               </button>
             </div>
           </form>
-
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">Or continue with</span>
-              </div>
-            </div>
-
-            <div className="mt-6">
-              <button
-                onClick={() => {
-                  // In a real app, this would use the Google Sign-In API
-                  const mockGoogleResponse = {
-                    profileObj: {
-                      googleId: 'mock-google-id',
-                      name: 'Google User',
-                      email: 'google-user@example.com',
-                      imageUrl: 'https://via.placeholder.com/32',
-                    },
-                  };
-                  handleGoogleSuccess(mockGoogleResponse);
-                }}
-                type="button"
-                className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
-              >
-                <FaGoogle className="h-5 w-5 text-red-500 mr-2" />
-                Sign in with Google
-              </button>
-            </div>
-          </div>
 
           {/* Demo credentials section */}
           <div className="mt-6">

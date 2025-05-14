@@ -1,4 +1,6 @@
 import { createContext, useState, useEffect } from 'react';
+import jwtDecode from 'jwt-decode';
+import { toast } from 'react-toastify';
 
 // Create the Auth Context
 export const AuthContext = createContext();
@@ -8,6 +10,11 @@ export const AuthProvider = ({ children }) => {
   const [userRole, setUserRole] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Allowed email domains from environment variable
+  const allowedDomains = (import.meta.env.VITE_ALLOWED_EMAIL_DOMAINS || 'blackhaysgroup.com,blackhays.com')
+    .split(',')
+    .map(domain => domain.trim());
 
   // Check if user is logged in on mount
   useEffect(() => {
@@ -34,6 +41,24 @@ export const AuthProvider = ({ children }) => {
     checkAuth();
   }, []);
 
+  // Check if email domain is allowed
+  const isEmailDomainAllowed = (email) => {
+    if (!email) return false;
+    
+    // For demo purposes, allow test accounts
+    if (email === 'admin@blackhays.com' || email === 'employee@blackhays.com') {
+      return true;
+    }
+    
+    for (const domain of allowedDomains) {
+      if (email.endsWith(`@${domain}`)) {
+        return true;
+      }
+    }
+    
+    return false;
+  };
+
   // Login function
   const login = async (email, password) => {
     try {
@@ -46,6 +71,11 @@ export const AuthProvider = ({ children }) => {
       
       // Sanitize inputs to prevent XSS
       const sanitizedEmail = email.trim().toLowerCase();
+      
+      // Validate email domain
+      if (!isEmailDomainAllowed(sanitizedEmail)) {
+        throw new Error('Login is restricted to Black Hays Group email accounts only');
+      }
       
       // Simulate API call
       if (sanitizedEmail === 'admin@blackhays.com' && password === 'admin123') {
@@ -87,31 +117,40 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Google login function
-  const googleLogin = async (googleResponse) => {
+  const googleLogin = async (response) => {
     try {
       setLoading(true);
       setError(null);
       
+      // Get the credential from Google response
+      const { credential } = response;
+      
+      // Decode the JWT to get user information
+      const decoded = jwtDecode(credential);
+      
+      // Validate email domain
+      if (!isEmailDomainAllowed(decoded.email)) {
+        throw new Error('Login is restricted to Black Hays Group email accounts only');
+      }
+      
       // In a real app, you would verify the Google token on your backend
       // and create/fetch the user account
-      // For demo purposes, we'll simulate a successful login
-      
       const user = {
-        id: googleResponse.profileObj.googleId || 'google-user-1',
-        name: googleResponse.profileObj.name || 'Google User',
-        email: googleResponse.profileObj.email || 'google@example.com',
-        role: 'employee', // Default role for Google auth users
-        avatar: googleResponse.profileObj.imageUrl,
+        id: decoded.sub || 'google-user', // Use the subject identifier from Google
+        name: decoded.name || 'Google User',
+        email: decoded.email || 'unknown@example.com', 
+        role: 'employee', // Default role for Google auth users - in a real app, this should come from your user database
+        avatar: decoded.picture, // Google provides profile picture URL
       };
       
       localStorage.setItem('user', JSON.stringify(user));
       
       setCurrentUser(user);
-      setUserRole('employee');
+      setUserRole('employee'); // In a real app, this role should be fetched from your database
       return true;
     } catch (err) {
       console.error('Google login error:', err);
-      setError('Failed to login with Google. Please try again.');
+      setError(err.message || 'Failed to login with Google. Please try again.');
       return false;
     } finally {
       setLoading(false);
@@ -134,6 +173,7 @@ export const AuthProvider = ({ children }) => {
     login,
     googleLogin,
     logout,
+    isEmailDomainAllowed,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
