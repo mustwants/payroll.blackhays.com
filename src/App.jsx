@@ -4,6 +4,15 @@ import { AuthContext } from './contexts/AuthContext';
 import DashboardLayout from './layouts/DashboardLayout';
 import Login from './pages/Login';
 import PageNotFound from './pages/PageNotFound';
+import { GoogleOAuthProvider } from '@react-oauth/google';
+
+function App() {
+  return (
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+      {/* Your app content */}
+    </GoogleOAuthProvider>
+  );
+}
 
 // Lazy load components for better performance
 const Dashboard = lazy(() => import('./pages/Dashboard'));
