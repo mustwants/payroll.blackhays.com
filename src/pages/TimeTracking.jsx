@@ -1,16 +1,30 @@
 import { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
+import { SupabaseContext } from '../contexts/SupabaseContext';
 import { format, parseISO } from 'date-fns';
 import { toast } from 'react-toastify';
-import { FiSave, FiClock, FiPlus, FiTrash2, FiFilter, FiCheck, FiBriefcase, FiCoffee, FiCalendar } from 'react-icons/fi';
+import { FiSave, FiClock, FiPlus, FiTrash2, FiFilter, FiCheck, FiBriefcase, FiCoffee, FiCalendar, FiDatabase } from 'react-icons/fi';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 
 const TimeTracking = () => {
   const { currentUser } = useContext(AuthContext);
+  const { 
+    getTimeEntries, 
+    addTimeEntry, 
+    updateTimeEntry, 
+    deleteTimeEntry, 
+    saveTimeEntries, 
+    getClients,
+    isUsingSupabase,
+    loading: dbLoading, 
+    error: dbError 
+  } = useContext(SupabaseContext);
+  
   const [selectedMonth, setSelectedMonth] = useState(format(new Date(), 'yyyy-MM'));
   const [timeEntries, setTimeEntries] = useState([]);
   const [selectedClient, setSelectedClient] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   
   // Quick entry form state
   const [quickEntry, setQuickEntry] = useState({
@@ -24,19 +38,38 @@ const TimeTracking = () => {
 
   // Load clients
   useEffect(() => {
-    const savedClients = JSON.parse(localStorage.getItem('clients') || '[]');
-    setClients(savedClients.filter(client => client.status === 'active'));
-  }, []);
+    const fetchClients = async () => {
+      try {
+        const fetchedClients = await getClients();
+        setClients(fetchedClients.filter(client => client.status === 'active'));
+      } catch (error) {
+        console.error("Error fetching clients:", error);
+        toast.error("Failed to load clients");
+      }
+    };
+    
+    fetchClients();
+  }, [getClients]);
 
-  // Load saved entries from localStorage when component mounts
+  // Load saved entries when component mounts or month changes
   useEffect(() => {
-    const savedEntries = localStorage.getItem(`timeEntries-${currentUser.id}-${selectedMonth}`);
-    if (savedEntries) {
-      setTimeEntries(JSON.parse(savedEntries));
-    } else {
-      setTimeEntries([]);
-    }
-  }, [currentUser.id, selectedMonth]);
+    const fetchTimeEntries = async () => {
+      if (!currentUser?.id) return;
+      
+      setIsLoading(true);
+      try {
+        const entries = await getTimeEntries(currentUser.id, selectedMonth);
+        setTimeEntries(entries);
+      } catch (error) {
+        console.error('Error loading time entries:', error);
+        toast.error('Failed to load time entries');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchTimeEntries();
+  }, [currentUser, selectedMonth, getTimeEntries]);
 
   // Handle quick entry form changes
   const handleQuickEntryChange = (e) => {
@@ -45,7 +78,7 @@ const TimeTracking = () => {
   };
 
   // Submit quick entry
-  const handleQuickSubmit = () => {
+  const handleQuickSubmit = async () => {
     if (!quickEntry.clientId || !quickEntry.hours || isNaN(parseFloat(quickEntry.hours))) {
       toast.error('Please select a client and enter valid hours');
       return;
@@ -55,7 +88,6 @@ const TimeTracking = () => {
     const clientName = selectedClientObj ? selectedClientObj.name : 'Unknown Client';
 
     const newEntry = {
-      id: Date.now().toString(),
       date: format(new Date(), 'yyyy-MM-dd'),
       clientId: quickEntry.clientId,
       clientName: clientName,
@@ -65,33 +97,37 @@ const TimeTracking = () => {
       userName: currentUser.name,
     };
 
-    const updatedEntries = [...timeEntries, newEntry];
-    setTimeEntries(updatedEntries);
-    
-    // Save to localStorage
-    localStorage.setItem(
-      `timeEntries-${currentUser.id}-${selectedMonth}`, 
-      JSON.stringify(updatedEntries)
-    );
-    
-    // Update global entries for admin reporting
-    const allEntries = JSON.parse(localStorage.getItem('allTimeEntries') || '[]');
-    localStorage.setItem('allTimeEntries', JSON.stringify([...allEntries, newEntry]));
-
-    // Reset quick entry form
-    setQuickEntry({
-      clientId: '',
-      hours: '',
-      notes: ''
-    });
-
-    toast.success('Time entry added successfully!');
+    try {
+      setIsLoading(true);
+      const addedEntry = await addTimeEntry(newEntry);
+      
+      if (addedEntry) {
+        // Update the local state
+        setTimeEntries(prev => [...prev, addedEntry]);
+        
+        // Reset quick entry form
+        setQuickEntry({
+          clientId: '',
+          hours: '',
+          notes: ''
+        });
+        
+        toast.success('Time entry added successfully!');
+      } else {
+        toast.error('Failed to add time entry');
+      }
+    } catch (error) {
+      console.error('Error adding time entry:', error);
+      toast.error('Error adding time entry');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // Add a new time entry
-  const addTimeEntry = () => {
+  // Add a new time entry (to the form, not saved yet)
+  const addTimeEntryToForm = () => {
     const newEntry = {
-      id: Date.now().toString(),
+      tempId: `temp-${Date.now()}`, // Temporary ID for UI purposes
       date: format(new Date(), 'yyyy-MM-dd'),
       clientId: '',
       clientName: '',
@@ -104,14 +140,35 @@ const TimeTracking = () => {
   };
 
   // Remove a time entry
-  const removeTimeEntry = (id) => {
-    setTimeEntries(timeEntries.filter(entry => entry.id !== id));
+  const removeTimeEntryFromForm = async (entry) => {
+    // If the entry has an ID (it's already saved in the database)
+    if (entry.id) {
+      try {
+        setIsLoading(true);
+        const success = await deleteTimeEntry(entry.id);
+        
+        if (success) {
+          setTimeEntries(timeEntries.filter(e => e.id !== entry.id));
+          toast.success('Entry deleted');
+        } else {
+          toast.error('Failed to delete entry');
+        }
+      } catch (error) {
+        console.error('Error deleting entry:', error);
+        toast.error('Error deleting entry');
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
+      // If it's just a temporary entry in the form
+      setTimeEntries(timeEntries.filter(e => e.tempId !== entry.tempId));
+    }
   };
 
-  // Update a time entry field
-  const updateTimeEntry = (id, field, value) => {
+  // Update a time entry field (in the form, not saved yet)
+  const updateTimeEntryInForm = (entryId, field, value) => {
     setTimeEntries(timeEntries.map(entry => {
-      if (entry.id === id) {
+      if ((entry.id && entry.id === entryId) || (entry.tempId && entry.tempId === entryId)) {
         // If updating clientId, also update clientName
         if (field === 'clientId' && value) {
           const selectedClient = clients.find(client => client.id === value);
@@ -128,7 +185,7 @@ const TimeTracking = () => {
   };
 
   // Save all time entries
-  const saveTimeEntries = () => {
+  const handleSaveEntries = async () => {
     // Validate entries
     const hasInvalidEntries = timeEntries.some(entry => 
       !entry.clientId || !entry.hours || isNaN(parseFloat(entry.hours))
@@ -139,26 +196,39 @@ const TimeTracking = () => {
       return;
     }
     
-    // In a real app, this would be an API call
-    // For the demo, we'll save to localStorage
-    localStorage.setItem(
-      `timeEntries-${currentUser.id}-${selectedMonth}`, 
-      JSON.stringify(timeEntries)
-    );
-    
-    // Also save to a global storage for admin reporting
-    const allEntries = JSON.parse(localStorage.getItem('allTimeEntries') || '[]');
-    
-    // Remove entries from this user and month before adding new ones
-    const filteredEntries = allEntries.filter(entry => 
-      !(entry.userId === currentUser.id && entry.date.startsWith(selectedMonth))
-    );
-    
-    // Add the new entries
-    const updatedAllEntries = [...filteredEntries, ...timeEntries];
-    localStorage.setItem('allTimeEntries', JSON.stringify(updatedAllEntries));
-    
-    toast.success('Time entries saved successfully!');
+    try {
+      setIsLoading(true);
+      
+      // For each new entry (with tempId), add it properly
+      const entriesNeedingAdd = timeEntries.filter(entry => entry.tempId);
+      const entriesToUpdate = timeEntries.filter(entry => entry.id);
+      
+      // Process new entries
+      if (entriesNeedingAdd.length > 0) {
+        for (const entry of entriesNeedingAdd) {
+          const { tempId, ...entryData } = entry;
+          await addTimeEntry(entryData);
+        }
+      }
+      
+      // Process updates to existing entries
+      if (entriesToUpdate.length > 0) {
+        for (const entry of entriesToUpdate) {
+          await updateTimeEntry(entry.id, entry);
+        }
+      }
+      
+      // Reload entries to get fresh data
+      const refreshedEntries = await getTimeEntries(currentUser.id, selectedMonth);
+      setTimeEntries(refreshedEntries);
+      
+      toast.success('All time entries saved successfully!');
+    } catch (error) {
+      console.error('Error saving time entries:', error);
+      toast.error('Error saving time entries');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Filter entries by client
@@ -182,6 +252,21 @@ const TimeTracking = () => {
 
   return (
     <div className="animate-fade-in">
+      {dbError && (
+        <div className="bg-yellow-50 dark:bg-yellow-900/30 border-l-4 border-yellow-400 p-4 mb-6">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <FiDatabase className="h-5 w-5 text-yellow-400" />
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-yellow-700 dark:text-yellow-200">
+                {dbError} Your data will be stored locally.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+      
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-4 md:mb-0">Time Tracking</h1>
         
@@ -209,11 +294,12 @@ const TimeTracking = () => {
           
           <Button
             variant="primary"
-            onClick={saveTimeEntries}
+            onClick={handleSaveEntries}
+            disabled={isLoading}
             className="flex items-center justify-center"
           >
             <FiSave className="mr-2" />
-            Save All Entries
+            {isLoading ? 'Saving...' : 'Save All Entries'}
           </Button>
         </div>
       </div>
@@ -236,6 +322,7 @@ const TimeTracking = () => {
                 name="clientId"
                 value={quickEntry.clientId}
                 onChange={handleQuickEntryChange}
+                disabled={isLoading}
                 className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               >
                 <option value="">Select a client</option>
@@ -257,6 +344,7 @@ const TimeTracking = () => {
                 name="hours"
                 value={quickEntry.hours}
                 onChange={handleQuickEntryChange}
+                disabled={isLoading}
                 min="0.25"
                 step="0.25"
                 placeholder="Enter hours"
@@ -274,6 +362,7 @@ const TimeTracking = () => {
                 name="notes"
                 value={quickEntry.notes}
                 onChange={handleQuickEntryChange}
+                disabled={isLoading}
                 placeholder="Brief description"
                 className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               />
@@ -283,10 +372,20 @@ const TimeTracking = () => {
           <Button
             variant="primary"
             onClick={handleQuickSubmit}
+            disabled={isLoading}
             className="flex items-center justify-center mt-4"
             size="lg"
           >
-            <FiCheck className="mr-2" /> Submit Time Entry
+            {isLoading ? (
+              <>
+                <div className="mr-2 animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                Submitting...
+              </>
+            ) : (
+              <>
+                <FiCheck className="mr-2" /> Submit Time Entry
+              </>
+            )}
           </Button>
           
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
@@ -323,7 +422,8 @@ const TimeTracking = () => {
                 
                 <Button
                   variant="secondary"
-                  onClick={addTimeEntry}
+                  onClick={addTimeEntryToForm}
+                  disabled={isLoading}
                   className="inline-flex items-center"
                 >
                   <FiPlus className="mr-2" /> Add Entry
@@ -331,7 +431,11 @@ const TimeTracking = () => {
               </div>
             </div>
 
-            {filteredEntries.length === 0 ? (
+            {isLoading && !timeEntries.length ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+              </div>
+            ) : filteredEntries.length === 0 ? (
               <div className="bg-gray-50 dark:bg-gray-700/50 text-center py-8 rounded">
                 <p className="text-gray-500 dark:text-gray-400">
                   {timeEntries.length === 0 
@@ -363,19 +467,21 @@ const TimeTracking = () => {
                   </thead>
                   <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                     {filteredEntries.map((entry) => (
-                      <tr key={entry.id}>
+                      <tr key={entry.id || entry.tempId}>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <input
                             type="date"
                             value={entry.date}
-                            onChange={(e) => updateTimeEntry(entry.id, 'date', e.target.value)}
+                            onChange={(e) => updateTimeEntryInForm(entry.id || entry.tempId, 'date', e.target.value)}
+                            disabled={isLoading}
                             className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                           />
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <select
                             value={entry.clientId}
-                            onChange={(e) => updateTimeEntry(entry.id, 'clientId', e.target.value)}
+                            onChange={(e) => updateTimeEntryInForm(entry.id || entry.tempId, 'clientId', e.target.value)}
+                            disabled={isLoading}
                             className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                           >
                             <option value="">Select a client</option>
@@ -392,7 +498,8 @@ const TimeTracking = () => {
                             step="0.25"
                             min="0"
                             value={entry.hours}
-                            onChange={(e) => updateTimeEntry(entry.id, 'hours', e.target.value)}
+                            onChange={(e) => updateTimeEntryInForm(entry.id || entry.tempId, 'hours', e.target.value)}
+                            disabled={isLoading}
                             className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                             placeholder="Hours"
                           />
@@ -400,7 +507,8 @@ const TimeTracking = () => {
                         <td className="px-6 py-4">
                           <textarea
                             value={entry.notes}
-                            onChange={(e) => updateTimeEntry(entry.id, 'notes', e.target.value)}
+                            onChange={(e) => updateTimeEntryInForm(entry.id || entry.tempId, 'notes', e.target.value)}
+                            disabled={isLoading}
                             className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                             placeholder="Add notes here..."
                             rows="1"
@@ -408,8 +516,9 @@ const TimeTracking = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right">
                           <button
-                            onClick={() => removeTimeEntry(entry.id)}
-                            className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                            onClick={() => removeTimeEntryFromForm(entry)}
+                            disabled={isLoading}
+                            className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 disabled:opacity-50"
                           >
                             <FiTrash2 size={18} />
                           </button>
@@ -468,6 +577,18 @@ const TimeTracking = () => {
                   })
                 ) : (
                   <p className="text-sm text-gray-500 dark:text-gray-400 italic">No hours recorded</p>
+                )}
+              </div>
+              
+              <div className="pt-2 text-center">
+                {isUsingSupabase() ? (
+                  <div className="inline-flex items-center text-xs text-green-600 dark:text-green-400">
+                    <FiDatabase className="mr-1" /> Connected to database
+                  </div>
+                ) : (
+                  <div className="inline-flex items-center text-xs text-gray-500 dark:text-gray-400">
+                    <FiDatabase className="mr-1" /> Using local storage
+                  </div>
                 )}
               </div>
             </div>
