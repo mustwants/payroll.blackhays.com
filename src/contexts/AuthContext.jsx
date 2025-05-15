@@ -74,7 +74,7 @@ export const AuthProvider = ({ children }) => {
       
       // Validate email domain
       if (!isEmailDomainAllowed(sanitizedEmail)) {
-        throw new Error('Login is restricted to Black Hays Group email accounts only');
+        throw new Error('Login is restricted to BlackHays Group email accounts only');
       }
       
       // Simulate API call
@@ -130,7 +130,7 @@ export const AuthProvider = ({ children }) => {
       
       // Validate email domain
       if (!isEmailDomainAllowed(decoded.email)) {
-        throw new Error('Login is restricted to Black Hays Group email accounts only');
+        throw new Error('Login is restricted to BlackHays Group email accounts only');
       }
       
       // In a real app, you would verify the Google token on your backend

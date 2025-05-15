@@ -24,14 +24,14 @@ const CompanyInfo = () => {
   const [companyInfo, setCompanyInfo] = useState(() => {
     const saved = localStorage.getItem('companyInfo');
     const initialValue = saved ? JSON.parse(saved) : {
-      name: 'Black Hays',
+      name: 'BlackHays Group',
       tagline: 'Professional Payroll Management Solutions',
       address: '123 Corporate Drive, Suite 500, New York, NY 10001',
       phone: '(555) 987-6543',
       email: 'info@blackhays.com',
       website: 'https://blackhays.com',
       logo: '',
-      description: 'Black Hays is a leading provider of payroll management solutions for businesses of all sizes. We leverage advanced technology to simplify payroll processing, time tracking, and employee management.',
+      description: 'BlackHays Group is a leading provider of payroll management solutions for businesses of all sizes. We leverage advanced technology to simplify payroll processing, time tracking, and employee management.',
       taxId: '12-3456789',
       yearFounded: '2010',
       leadership: [

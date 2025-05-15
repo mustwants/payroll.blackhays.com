@@ -60,7 +60,7 @@ const DashboardLayout = () => {
         }`}
       >
         <div className="flex items-center justify-between px-4 py-6">
-          <div className="font-bold text-xl">BlackHays</div>
+          <div className="font-bold text-xl">BlackHays Group</div>
           <button 
             className="md:hidden text-white focus:outline-none" 
             onClick={toggleSidebar}
@@ -121,7 +121,7 @@ const DashboardLayout = () => {
             >
               <FiMenu size={24} />
             </button>
-            <div className="md:hidden font-bold">BlackHays</div>
+            <div className="md:hidden font-bold">BlackHays Group</div>
             <div className="flex items-center space-x-4">
               <ThemeToggle />
               <span className="mr-2 text-sm text-gray-600 dark:text-gray-200 hidden md:block">
@@ -146,7 +146,7 @@ const DashboardLayout = () => {
         {/* Footer */}
         <footer className="bg-white dark:bg-gray-800 py-3 px-4 shadow-inner border-t border-gray-200 dark:border-gray-700">
           <div className="text-center text-sm text-gray-500 dark:text-gray-400">
-            &copy; {new Date().getFullYear()} BlackHays Payroll Management System
+            &copy; {new Date().getFullYear()} BlackHays Group Payroll Management System
           </div>
         </footer>
       </div>

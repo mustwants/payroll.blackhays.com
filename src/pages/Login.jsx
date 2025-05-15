@@ -41,7 +41,7 @@ const Login = () => {
     
     // Domain validation
     if (!isEmailDomainAllowed(email)) {
-      toast.error('Login is restricted to Black Hays Group email accounts only');
+      toast.error('Login is restricted to BlackHays Group email accounts only');
       return;
     }
     
@@ -102,12 +102,12 @@ const Login = () => {
         </div>
         
         <div>
-          <h1 className="text-center text-3xl font-extrabold text-gray-900 dark:text-white">Black Hays</h1>
+          <h1 className="text-center text-3xl font-extrabold text-gray-900 dark:text-white">BlackHays Group</h1>
           <h2 className="mt-3 text-center text-xl font-bold text-gray-700 dark:text-gray-200">
             Payroll Management System
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-            Please sign in with your Black Hays account
+            Please sign in with your BlackHays Group account
           </p>
         </div>
         
@@ -118,7 +118,7 @@ const Login = () => {
             </div>
             <div className="ml-3">
               <p className="text-sm text-yellow-700 dark:text-yellow-200">
-                Access is restricted to Black Hays Group email accounts only.
+                Access is restricted to BlackHays Group email accounts only.
               </p>
             </div>
           </div>
