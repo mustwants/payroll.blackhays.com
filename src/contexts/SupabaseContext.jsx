@@ -10,6 +10,8 @@ export const SupabaseProvider = ({ children }) => {
   const [initialized, setInitialized] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [retryCount, setRetryCount] = useState(0);
+  const MAX_RETRIES = 3;
   
   // Initialize Supabase connection and check status
   useEffect(() => {
@@ -25,17 +27,43 @@ export const SupabaseProvider = ({ children }) => {
         setLoading(true);
         setError(null);
         
-        // Check if we can connect to Supabase
-        const { data, error } = await supabase.from('clients').select('count', { count: 'exact', head: true });
+        // Check if we can connect to Supabase with a simple health check
+        // Instead of clients table, use a simpler query that's less likely to fail
+        const { data, error } = await supabase.rpc('get_service_status');
         
-        if (error) throw error;
+        if (error) {
+          // If RPC doesn't exist, try a basic select as fallback
+          const healthCheck = await supabase.from('company_info').select('id').limit(1);
+          
+          if (healthCheck.error) {
+            throw healthCheck.error;
+          }
+        }
         
         setInitialized(true);
+        setRetryCount(0); // Reset retry counter on success
         console.log('Supabase connection established');
       } catch (err) {
         console.error('Supabase connection error:', err);
-        setError('Failed to connect to database. Using local storage as fallback.');
-        setInitialized(false);
+        
+        // Detailed error information
+        const errorMessage = err.message || 'Unknown error';
+        const errorCode = err.code || 'No error code';
+        const statusCode = err.status || 'No status code';
+        
+        // Provide more detailed error message
+        const detailedError = `Failed to connect to database (Status: ${statusCode}, Code: ${errorCode}): ${errorMessage}. Using local storage as fallback.`;
+        setError(detailedError);
+        
+        // Retry logic
+        if (retryCount < MAX_RETRIES) {
+          console.log(`Retrying connection (attempt ${retryCount + 1} of ${MAX_RETRIES})...`);
+          setRetryCount(retryCount + 1);
+          // Will retry on next effect cycle
+        } else {
+          console.log('Maximum retry attempts reached. Falling back to local storage.');
+          setInitialized(false);
+        }
       } finally {
         setLoading(false);
       }
@@ -55,7 +83,7 @@ export const SupabaseProvider = ({ children }) => {
       setInitialized(false);
       setLoading(false);
     }
-  }, []);
+  }, [retryCount]); // Added retryCount as dependency to trigger retries
   
   // Sync user data with Supabase if initialized and user is logged in
   useEffect(() => {
