@@ -1,6 +1,7 @@
 import { createContext, useState, useEffect, useContext } from 'react';
 import { AuthContext } from './AuthContext';
 import supabase, { timeEntriesService, clientsService, employeesService } from '../services/supabaseService';
+import { v4 as uuidv4 } from 'uuid';
 
 // Create the Supabase Context
 export const SupabaseContext = createContext(null);
@@ -91,6 +92,12 @@ export const SupabaseProvider = ({ children }) => {
       if (!initialized || !currentUser || !supabase) return;
       
       try {
+        // Ensure user ID is a valid UUID before checking
+        if (typeof currentUser.id !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(currentUser.id)) {
+          console.error('Invalid UUID format for user ID:', currentUser.id);
+          return;
+        }
+        
         // Check if user exists in our users table
         const { data, error } = await supabase
           .from('users')
@@ -105,13 +112,25 @@ export const SupabaseProvider = ({ children }) => {
         
         // If user doesn't exist in our table, create them
         if (!data) {
-          await supabase.from('users').insert([{
+          // Create a new user object with valid UUID
+          const userData = {
             id: currentUser.id,
             email: currentUser.email,
             name: currentUser.name,
             role: currentUser.role || 'employee',
             avatar_url: currentUser.avatar
-          }]);
+          };
+          
+          // Google ID if available
+          if (currentUser.google_id) {
+            userData.google_id = currentUser.google_id;
+          }
+          
+          const { error: insertError } = await supabase.from('users').insert([userData]);
+          
+          if (insertError) {
+            console.error('Error creating user in Supabase:', insertError);
+          }
         }
       } catch (err) {
         console.error('Error syncing user data with Supabase:', err);

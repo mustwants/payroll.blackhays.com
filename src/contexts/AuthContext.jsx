@@ -1,6 +1,7 @@
 import { createContext, useState, useEffect } from 'react';
 import jwtDecode from 'jwt-decode';
 import { toast } from 'react-toastify';
+import { v4 as uuidv4 } from 'uuid';
 
 // Create the Auth Context
 export const AuthContext = createContext();
@@ -80,7 +81,7 @@ export const AuthProvider = ({ children }) => {
       // Simulate API call
       if (sanitizedEmail === 'admin@blackhays.com' && password === 'admin123') {
         const user = {
-          id: '1',
+          id: uuidv4(), // Generate a UUID instead of using '1'
           name: 'Admin User',
           email: sanitizedEmail,
           role: 'admin',
@@ -94,7 +95,7 @@ export const AuthProvider = ({ children }) => {
         return true;
       } else if (sanitizedEmail === 'employee@blackhays.com' && password === 'employee123') {
         const user = {
-          id: '2',
+          id: uuidv4(), // Generate a UUID instead of using '2'
           name: 'Test Employee',
           email: sanitizedEmail,
           role: 'employee',
@@ -136,7 +137,8 @@ export const AuthProvider = ({ children }) => {
       // In a real app, you would verify the Google token on your backend
       // and create/fetch the user account
       const user = {
-        id: decoded.sub || 'google-user', // Use the subject identifier from Google
+        id: uuidv4(), // Generate a UUID instead of using Google's sub
+        google_id: decoded.sub, // Store Google's sub as a separate property
         name: decoded.name || 'Google User',
         email: decoded.email || 'unknown@example.com', 
         role: 'employee', // Default role for Google auth users - in a real app, this should come from your user database
