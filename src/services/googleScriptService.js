@@ -17,7 +17,7 @@ const BASE_URL = import.meta.env.VITE_GOOGLE_SCRIPT_URL || '';
  * @returns {Promise} - Promise resolving to the response data
  */
 export const callGoogleScript = async ({ action, payload = {}, method = 'POST' }) => {
-  if (!BASE_URL) {
+  if (!BASE_URL || BASE_URL === 'https://script.google.com/macros/s/your-script-id/exec') {
     console.error('Google Script URL not configured');
     throw new Error('Google Script URL not configured');
   }

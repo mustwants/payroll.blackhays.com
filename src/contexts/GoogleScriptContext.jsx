@@ -38,13 +38,29 @@ export const GoogleScriptProvider = ({ children }) => {
       }
     };
 
-    checkConnection();
+    // Only run the connection check if there's a valid Google Script URL
+    const googleScriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
+    if (googleScriptUrl && googleScriptUrl !== 'https://script.google.com/macros/s/your-script-id/exec') {
+      checkConnection();
+    } else {
+      setScriptError('Google Script URL not properly configured. Please update your .env file.');
+      setIsConnected(false);
+      setIsLoading(false);
+    }
   }, [currentUser]);
 
   // Connect to Google Apps Script
   const connectToGoogleScript = async () => {
     if (!currentUser) {
       setScriptError('You must be logged in to connect to Google Apps Script');
+      return false;
+    }
+
+    // Check if Google Script URL is properly configured
+    const googleScriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
+    if (!googleScriptUrl || googleScriptUrl === 'https://script.google.com/macros/s/your-script-id/exec') {
+      setScriptError('Google Script URL not properly configured. Please update your .env file.');
+      setIsConnected(false);
       return false;
     }
 

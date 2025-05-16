@@ -16,6 +16,8 @@ export const SupabaseProvider = ({ children }) => {
     const checkConnection = async () => {
       if (!supabase) {
         console.warn('Supabase client not available.');
+        setError('Supabase client not available. Using local storage as fallback.');
+        setInitialized(false);
         return;
       }
       
@@ -39,7 +41,20 @@ export const SupabaseProvider = ({ children }) => {
       }
     };
     
-    checkConnection();
+    // Only try to connect if Supabase URL and key are properly configured
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    
+    if (supabaseUrl && supabaseKey && 
+        supabaseUrl !== 'https://placeholder.supabase.co' && 
+        supabaseKey !== 'placeholder-key') {
+      checkConnection();
+    } else {
+      console.warn('Supabase credentials missing or invalid.');
+      setError('Supabase credentials missing or invalid. Using local storage as fallback.');
+      setInitialized(false);
+      setLoading(false);
+    }
   }, []);
   
   // Sync user data with Supabase if initialized and user is logged in
