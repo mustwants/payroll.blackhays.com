@@ -5,6 +5,17 @@ import { FiUserPlus, FiSearch, FiEdit2, FiTrash2, FiMail, FiPhone, FiSave, FiX, 
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 import { toast } from 'react-toastify';
+import { useEffect } from 'react';
+import { authenticateBlackhaysUser } from '../hooks/useGoogleScript';
+
+useEffect(() => {
+  authenticateBlackhaysUser().then((res) => {
+    if (!res.success) {
+      toast.error(res.error || 'Access denied: Not a BlackHays user');
+      navigate('/unauthorized');
+    }
+  });
+}, []);
 
 const Employees = () => {
   const { userRole } = useContext(AuthContext);
