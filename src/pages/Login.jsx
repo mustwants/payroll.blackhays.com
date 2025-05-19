@@ -3,7 +3,7 @@ import { useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
 import { ThemeContext } from '../contexts/ThemeContext';
 import { toast } from 'react-toastify';
-import { FiUser, FiLock, FiSun, FiMoon, FiAlertCircle } from 'react-icons/fi';
+import { FiUser, FiLock, FiSun, FiMoon, FiAlertCircle } from 'react-icons/feather';
 import { FcGoogle } from 'react-icons/fc';
 import { GoogleLogin } from '@react-oauth/google';
 
