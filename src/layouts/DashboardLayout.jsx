@@ -2,7 +2,7 @@ import { useState, useContext } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
 import { ThemeContext } from '../contexts/ThemeContext';
-import { FiHome, FiUsers, FiDollarSign, FiBarChart2, FiSettings, FiMenu, FiX, FiLogOut, FiClock, FiBook, FiBriefcase, FiGrid, FiInfo } from 'react-icons/feather';
+import { FiHome, FiUsers, FiDollarSign, FiBarChart2, FiSettings, FiMenu, FiX, FiLogOut, FiClock, FiBook, FiBriefcase, FiGrid, FiInfo } from 'react-icons/fi';
 import ThemeToggle from '../components/ui/ThemeToggle';
 
 const DashboardLayout = () => {
