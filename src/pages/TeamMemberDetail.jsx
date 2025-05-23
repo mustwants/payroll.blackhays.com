@@ -97,16 +97,21 @@ const memberEntries = entries;
   }, [employeeId, navigate]);
   
   // Save team member data
-  const saveTeamMemberData = (updatedMember) => {
-    try {
-      // Get all team members
-      const teamMembers = JSON.parse(localStorage.getItem('employees') || '[]');
-      
-      // Update the team member in the array
-      const updatedTeamMembers = teamMembers.map(member => 
-        member.id === employeeId ? updatedMember : member
-      );
-      
+  const saveTeamMemberData = async (updatedMember) => {
+  try {
+    await fetch(import.meta.env.VITE_ADVISOR_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updatedMember),
+    });
+    setTeamMemberInfo(updatedMember);
+    toast.success('Team member info saved to Google Sheet');
+  } catch (error) {
+    console.error('Error saving to Google Sheet:', error);
+    toast.error('Failed to save team member data');
+  }
+};
+     
       // Save back to localStorage
       localStorage.setItem('employees', JSON.stringify(updatedTeamMembers));
       
