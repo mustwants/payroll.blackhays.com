@@ -436,7 +436,8 @@ import { format } from 'date-fns';
                     className="mt-1 focus:ring-primary-500 focus:border-primary-500 block w-full shadow-sm sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
                   />
                 </div>
-              <Card title="Google Workspace Advisor Info" className="mt-6">
+    
+                <Card title="Google Workspace Advisor Info" className="mt-6">
   <div className="p-4">
     <AdvisorProfile 
       userEmail={teamMemberInfo.email}
