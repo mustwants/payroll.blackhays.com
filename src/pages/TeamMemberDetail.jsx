@@ -32,9 +32,13 @@ import AdvisorProfile from '../components/AdvisorProfile';
       setLoading(true);
       try {
         // Load team members from localStorage
-        const teamMembers = JSON.parse(localStorage.getItem('employees') || '[]');
-        const teamMember = teamMembers.find(member => member.id === employeeId);
-        
+      const fetchFromGoogleSheet = async () => {
+        const res = await fetch(`${import.meta.env.VITE_ADVISOR_API}?email=${advisorEmail}`);
+        const data = await res.json();
+        setTeamMemberInfo(data[0] || null);
+      };
+      await fetchFromGoogleSheet();
+
         if (teamMember) {
           // Initialize skills if not present
           if (!teamMember.skills) {
