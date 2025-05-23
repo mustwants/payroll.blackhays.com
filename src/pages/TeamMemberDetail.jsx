@@ -6,6 +6,24 @@ import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 import { toast } from 'react-toastify';
 import { format } from 'date-fns';
+import AdvisorProfile from '../components/AdvisorProfile'
+import { useParams } from 'react-router-dom'
+import { useContext } from 'react'
+import { AuthContext } from '../contexts/AuthContext'
+
+export default function TeamMemberDetail() {
+  const { currentUser } = useContext(AuthContext)
+  const { employeeId } = useParams()
+
+  const isAdmin = currentUser?.email === 'accounting@blackhaysgroup.com'
+  const advisorEmail = decodeURIComponent(employeeId)
+
+  return (
+    <div className="p-4">
+      <AdvisorProfile userEmail={advisorEmail} isAdmin={isAdmin} />
+    </div>
+  )
+}
 
 const TeamMemberDetail = () => {
   const { employeeId } = useParams();
