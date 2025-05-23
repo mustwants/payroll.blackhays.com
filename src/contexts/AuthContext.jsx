@@ -12,10 +12,8 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Allowed email domains from environment variable
-  const allowedDomains = (import.meta.env.VITE_ALLOWED_EMAIL_DOMAINS || 'blackhaysgroup.com,blackhays.com')
-    .split(',')
-    .map(domain => domain.trim());
+  // Allowed email domains from environment variable - Only blackhaysgroup.com is allowed
+  const allowedDomains = ['blackhaysgroup.com'];
 
   // Check if user is logged in on mount
   useEffect(() => {
@@ -46,11 +44,6 @@ export const AuthProvider = ({ children }) => {
   const isEmailDomainAllowed = (email) => {
     if (!email) return false;
     
-    // For demo purposes, allow test accounts
-    if (email === 'admin@blackhays.com' || email === 'employee@blackhays.com') {
-      return true;
-    }
-    
     for (const domain of allowedDomains) {
       if (email.endsWith(`@${domain}`)) {
         return true;
@@ -60,55 +53,15 @@ export const AuthProvider = ({ children }) => {
     return false;
   };
 
-  // Login function
+  // Login function - disabled direct login
   const login = async (email, password) => {
     try {
       setLoading(true);
       setError(null);
       
-      // In a real application, this would be an API call
-      // For demo purposes, we'll simulate a successful login with admin role
-      // SECURITY NOTE: In production, use proper authentication with JWT or OAuth
-      
-      // Sanitize inputs to prevent XSS
-      const sanitizedEmail = email.trim().toLowerCase();
-      
-      // Validate email domain
-      if (!isEmailDomainAllowed(sanitizedEmail)) {
-        throw new Error('Login is restricted to BlackHays Group email accounts only');
-      }
-      
-      // Simulate API call
-      if (sanitizedEmail === 'admin@blackhays.com' && password === 'admin123') {
-        const user = {
-          id: uuidv4(), // Generate a UUID instead of using '1'
-          name: 'Admin User',
-          email: sanitizedEmail,
-          role: 'admin',
-        };
-        
-        // Store user info in localStorage (in production, store JWT instead)
-        localStorage.setItem('user', JSON.stringify(user));
-        
-        setCurrentUser(user);
-        setUserRole('admin');
-        return true;
-      } else if (sanitizedEmail === 'employee@blackhays.com' && password === 'employee123') {
-        const user = {
-          id: uuidv4(), // Generate a UUID instead of using '2'
-          name: 'Test Employee',
-          email: sanitizedEmail,
-          role: 'employee',
-        };
-        
-        localStorage.setItem('user', JSON.stringify(user));
-        
-        setCurrentUser(user);
-        setUserRole('employee');
-        return true;
-      } else {
-        throw new Error('Invalid email or password');
-      }
+      // Direct login is disabled
+      toast.error('Direct login is disabled. Please use Google Sign-in with your blackhaysgroup.com account.');
+      return false;
     } catch (err) {
       setError(err.message);
       return false;
@@ -131,7 +84,7 @@ export const AuthProvider = ({ children }) => {
       
       // Validate email domain
       if (!isEmailDomainAllowed(decoded.email)) {
-        throw new Error('Login is restricted to BlackHays Group email accounts only');
+        throw new Error('Login is restricted to BlackHays Group email accounts (@blackhaysgroup.com) only');
       }
       
       // In a real app, you would verify the Google token on your backend
