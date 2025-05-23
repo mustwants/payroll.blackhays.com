@@ -6,7 +6,7 @@ import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 import { toast } from 'react-toastify';
 import { format } from 'date-fns';
-
+import AdvisorProfile from '../components/AdvisorProfile';
 
   const [teamMemberInfo, setTeamMemberInfo] = useState(null);
   const [loading, setLoading] = useState(true);
