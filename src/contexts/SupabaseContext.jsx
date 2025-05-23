@@ -2,6 +2,7 @@ import { createContext, useState, useEffect, useContext } from 'react';
 import { AuthContext } from './AuthContext';
 import supabase, { timeEntriesService, clientsService, employeesService } from '../services/supabaseService';
 import { v4 as uuidv4 } from 'uuid';
+import { createClient } from '@supabase/supabase-js';
 
 // Create the Supabase Context
 export const SupabaseContext = createContext(null);
@@ -105,20 +106,20 @@ export const SupabaseProvider = ({ children }) => {
           return;
         }
         
-        // Check if user exists in our users table
+        // Check if user exists in our users table - using limit(1) instead of single()
         const { data, error } = await supabase
           .from('users')
           .select('*')
           .eq('id', currentUser.id)
-          .single();
+          .limit(1);
           
-        if (error && error.code !== 'PGRST116') { // PGRST116 means no rows returned
+        if (error) {
           console.error('Error checking user:', error);
           return;
         }
         
         // If user doesn't exist in our table, create them
-        if (!data) {
+        if (!data || data.length === 0) {
           // Create a new user object with valid UUID
           const userData = {
             id: currentUser.id,
@@ -138,24 +139,48 @@ export const SupabaseProvider = ({ children }) => {
           let insertResult;
           
           if (serviceRoleKey) {
-            // Create a service role client
-            const serviceClient = createClient(
-              import.meta.env.VITE_SUPABASE_URL,
-              serviceRoleKey
-            );
-            
-            insertResult = await serviceClient.from('users').insert([userData]);
+            try {
+              // Create a service role client
+              const serviceClient = createClient(
+                import.meta.env.VITE_SUPABASE_URL,
+                serviceRoleKey
+              );
+              
+              insertResult = await serviceClient
+                .from('users')
+                .insert([userData])
+                .select();
+                
+              if (insertResult.error) {
+                console.error('Error creating user with service role:', insertResult.error);
+                throw insertResult.error;
+              }
+            } catch (serviceError) {
+              console.error('Service role client error:', serviceError);
+              // Fall back to regular client if service role fails
+              insertResult = await supabase
+                .from('users')
+                .insert([userData])
+                .select();
+            }
           } else {
-            // Fall back to regular client
-            insertResult = await supabase.from('users').insert([userData]);
+            // Try with auth.uid() matching the user ID (which should pass RLS)
+            insertResult = await supabase
+              .from('users')
+              .insert([userData])
+              .select();
           }
           
-          if (insertResult.error) {
+          if (insertResult && insertResult.error) {
             console.error('Error creating user in Supabase:', insertResult.error);
+            // Don't throw, just log - allow the app to continue with local storage fallback
+          } else {
+            console.log('User created or updated in Supabase');
           }
         }
       } catch (err) {
         console.error('Error syncing user data with Supabase:', err);
+        // Don't rethrow, let the app continue with local storage
       }
     };
     
