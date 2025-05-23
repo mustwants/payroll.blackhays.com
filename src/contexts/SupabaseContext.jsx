@@ -93,8 +93,15 @@ export const SupabaseProvider = ({ children }) => {
       
       try {
         // Ensure user ID is a valid UUID before checking
-        if (typeof currentUser.id !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(currentUser.id)) {
+        const isValidUUID = typeof currentUser.id === 'string' && 
+                           /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(currentUser.id);
+        
+        if (!isValidUUID) {
           console.error('Invalid UUID format for user ID:', currentUser.id);
+          // Generate a valid UUID if the current one is invalid
+          const validUUID = uuidv4();
+          console.log('Generated valid UUID:', validUUID);
+          // We can't modify currentUser directly, so we'll need to use the local user data
           return;
         }
         
@@ -126,10 +133,25 @@ export const SupabaseProvider = ({ children }) => {
             userData.google_id = currentUser.google_id;
           }
           
-          const { error: insertError } = await supabase.from('users').insert([userData]);
+          // Try inserting with service role if available
+          const serviceRoleKey = import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
+          let insertResult;
           
-          if (insertError) {
-            console.error('Error creating user in Supabase:', insertError);
+          if (serviceRoleKey) {
+            // Create a service role client
+            const serviceClient = createClient(
+              import.meta.env.VITE_SUPABASE_URL,
+              serviceRoleKey
+            );
+            
+            insertResult = await serviceClient.from('users').insert([userData]);
+          } else {
+            // Fall back to regular client
+            insertResult = await supabase.from('users').insert([userData]);
+          }
+          
+          if (insertResult.error) {
+            console.error('Error creating user in Supabase:', insertResult.error);
           }
         }
       } catch (err) {

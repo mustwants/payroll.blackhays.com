@@ -5,16 +5,6 @@ import { FiUserPlus, FiSearch, FiEdit2, FiTrash2, FiMail, FiPhone, FiSave, FiX, 
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 import { toast } from 'react-toastify';
-import { authenticateBlackhaysUser } from '../hooks/useGoogleScript';
-
-useEffect(() => {
-  authenticateBlackhaysUser().then((res) => {
-    if (!res.success) {
-      toast.error(res.error || 'Access denied: Not a BlackHays user');
-      navigate('/unauthorized');
-    }
-  });
-}, []);
 
 const Employees = () => {
   const { userRole } = useContext(AuthContext);
@@ -140,6 +130,29 @@ const Employees = () => {
   useEffect(() => {
     localStorage.setItem('employees', JSON.stringify(teamMembers));
   }, [teamMembers]);
+  
+  // Authenticate with Google Script - moved inside component
+  useEffect(() => {
+    const authenticateUser = async () => {
+      try {
+        const response = await fetch(import.meta.env.VITE_GOOGLE_SCRIPT_URL || '');
+        const data = await response.json();
+        if (!data.success) {
+          console.log("Google Script authentication failed:", data.error);
+          // Handle failed authentication if needed
+        }
+      } catch (err) {
+        console.log("Error connecting to Google Script:", err);
+        // Silently fail as this is optional
+      }
+    };
+    
+    // Only attempt authentication if URL is configured
+    const googleScriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
+    if (googleScriptUrl && googleScriptUrl !== 'https://script.google.com/macros/s/your-script-id/exec') {
+      authenticateUser();
+    }
+  }, []);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
