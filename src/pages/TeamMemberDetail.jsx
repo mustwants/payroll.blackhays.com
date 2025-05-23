@@ -8,6 +8,16 @@ import { toast } from 'react-toastify';
 import { format } from 'date-fns';
 import AdvisorProfile from '../components/AdvisorProfile';
 
+  const TeamMemberDetail = () => {
+  const { employeeId } = useParams();
+  const navigate = useNavigate();
+  const { currentUser, userRole } = useContext(AuthContext);
+  const avatarFileInputRef = useRef(null);
+
+  const isAdmin = currentUser?.email === 'accounting@blackhaysgroup.com';
+  const advisorEmail = decodeURIComponent(employeeId);
+
+  const [activeTab, setActiveTab] = useState('local');
   const [teamMemberInfo, setTeamMemberInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [timeEntries, setTimeEntries] = useState([]);
