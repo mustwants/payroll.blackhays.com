@@ -6,43 +6,8 @@ import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 import { toast } from 'react-toastify';
 import { format } from 'date-fns';
-import AdvisorProfile from '../components/AdvisorProfile'
-import { useParams } from 'react-router-dom'
-import { useContext } from 'react'
-import { AuthContext } from '../contexts/AuthContext'
 
-export default function TeamMemberDetail() {
-  const { currentUser } = useContext(AuthContext)
-  const { employeeId } = useParams()
 
-  const isAdmin = currentUser?.email === 'accounting@blackhaysgroup.com'
-  const advisorEmail = decodeURIComponent(employeeId)
-
-  return (
-    <div className="p-4">
-      <AdvisorProfile userEmail={advisorEmail} isAdmin={isAdmin} />
-    </div>
-  )
-}
-
-const TeamMemberDetail = () => {
-  const { employeeId } = useParams();
-  const navigate = useNavigate();
-  const { userRole } = useContext(AuthContext);
-  const avatarFileInputRef = useRef(null);
-  
-  // Only administrators should access this page
-  if (userRole !== 'admin') {
-    return (
-      <div className="flex flex-col items-center justify-center p-4">
-        <h1 className="text-2xl font-bold text-red-600 mb-3">Access Denied</h1>
-        <p className="mb-4">
-          You don't have permission to access the team member details page.
-        </p>
-      </div>
-    );
-  }
-  
   const [teamMemberInfo, setTeamMemberInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [timeEntries, setTimeEntries] = useState([]);
