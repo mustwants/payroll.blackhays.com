@@ -31,14 +31,7 @@ import AdvisorProfile from '../components/AdvisorProfile';
     const fetchTeamMemberData = () => {
       setLoading(true);
       try {
-        // Load team members from localStorage
-      const fetchFromGoogleSheet = async () => {
-        const res = await fetch(`${import.meta.env.VITE_ADVISOR_TIME_API}?email=${advisorEmail}`);
-const entries = await res.json();
-const memberEntries = entries;
-
-      };
-      await fetchFromGoogleSheet();
+        await fetchFromGoogleSheet();
 
         if (teamMember) {
           // Initialize skills if not present
@@ -49,7 +42,6 @@ const memberEntries = entries;
           setTeamMemberInfo(teamMember);
           
           // Load time entries for this team member
-          // const allEntries = JSON.parse(localStorage.getItem('allTimeEntries') || '[]');
           const memberEntries = allEntries.filter(entry => entry.userId === employeeId);
           
           // Get current month entries
@@ -112,9 +104,6 @@ const memberEntries = entries;
   }
 };
      
-      // Save back to localStorage
-      localStorage.setItem('employees', JSON.stringify(updatedTeamMembers));
-      
       // Update local state
       setTeamMemberInfo(updatedMember);
       
