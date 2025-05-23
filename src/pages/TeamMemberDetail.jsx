@@ -33,9 +33,10 @@ import AdvisorProfile from '../components/AdvisorProfile';
       try {
         // Load team members from localStorage
       const fetchFromGoogleSheet = async () => {
-        const res = await fetch(`${import.meta.env.VITE_ADVISOR_API}?email=${advisorEmail}`);
-        const data = await res.json();
-        setTeamMemberInfo(data[0] || null);
+        const res = await fetch(`${import.meta.env.VITE_ADVISOR_TIME_API}?email=${advisorEmail}`);
+const entries = await res.json();
+const memberEntries = entries;
+
       };
       await fetchFromGoogleSheet();
 
@@ -48,7 +49,7 @@ import AdvisorProfile from '../components/AdvisorProfile';
           setTeamMemberInfo(teamMember);
           
           // Load time entries for this team member
-          const allEntries = JSON.parse(localStorage.getItem('allTimeEntries') || '[]');
+          // const allEntries = JSON.parse(localStorage.getItem('allTimeEntries') || '[]');
           const memberEntries = allEntries.filter(entry => entry.userId === employeeId);
           
           // Get current month entries
