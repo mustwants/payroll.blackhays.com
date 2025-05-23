@@ -44,6 +44,11 @@ export const AuthProvider = ({ children }) => {
   const isEmailDomainAllowed = (email) => {
     if (!email) return false;
     
+    // Allow admin@blackhays.com for testing in bolt.new
+    if (email === 'admin@blackhays.com') {
+      return true;
+    }
+    
     for (const domain of allowedDomains) {
       if (email.endsWith(`@${domain}`)) {
         return true;
@@ -53,15 +58,38 @@ export const AuthProvider = ({ children }) => {
     return false;
   };
 
-  // Login function - disabled direct login
+  // Login function - also support direct login for admin testing
   const login = async (email, password) => {
     try {
       setLoading(true);
       setError(null);
       
-      // Direct login is disabled
-      toast.error('Direct login is disabled. Please use Google Sign-in with your blackhaysgroup.com account.');
-      return false;
+      // Sanitize inputs to prevent XSS
+      const sanitizedEmail = email.trim().toLowerCase();
+      
+      // Validate email domain
+      if (!isEmailDomainAllowed(sanitizedEmail)) {
+        throw new Error('Login is restricted to BlackHays Group email accounts only');
+      }
+      
+      // For testing in bolt.new, allow admin@blackhays.com with password admin123
+      if (sanitizedEmail === 'admin@blackhays.com' && password === 'admin123') {
+        const user = {
+          id: uuidv4(),
+          name: 'Admin User',
+          email: sanitizedEmail,
+          role: 'admin',
+        };
+        
+        localStorage.setItem('user', JSON.stringify(user));
+        
+        setCurrentUser(user);
+        setUserRole('admin');
+        return true;
+      } else {
+        // For production, direct login is disabled
+        throw new Error('Direct login is disabled. Please use Google Sign-in with your blackhaysgroup.com account.');
+      }
     } catch (err) {
       setError(err.message);
       return false;

@@ -1,17 +1,19 @@
-import { useState, useContext, useEffect } from 'react';
+import { useState, useContext } from 'react';
 import { useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
 import { ThemeContext } from '../contexts/ThemeContext';
 import { toast } from 'react-toastify';
-import { FiSun, FiMoon, FiAlertCircle } from "react-icons/fi";
+import { FiUser, FiLock, FiSun, FiMoon, FiAlertCircle } from "react-icons/fi";
 import { GoogleLogin } from '@react-oauth/google';
 
 const Login = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   
   const navigate = useNavigate();
   const location = useLocation();
-  const { currentUser, googleLogin, error } = useContext(AuthContext);
+  const { currentUser, login, googleLogin, error, isEmailDomainAllowed } = useContext(AuthContext);
   const { darkMode, toggleTheme } = useContext(ThemeContext);
   
   // Redirect if already logged in
@@ -20,6 +22,47 @@ const Login = () => {
     return <Navigate to={from} replace />;
   }
   
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    // Basic form validation
+    if (!email.trim() || !password) {
+      toast.error('Email and password are required');
+      return;
+    }
+    
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
+    
+    // Domain validation
+    if (!isEmailDomainAllowed(email)) {
+      toast.error('Login is restricted to BlackHays Group email accounts only');
+      return;
+    }
+    
+    setLoading(true);
+    
+    try {
+      const success = await login(email, password);
+      if (success) {
+        const from = location.state?.from?.pathname || '/';
+        navigate(from, { replace: true });
+        toast.success('Login successful');
+      } else {
+        toast.error(error || 'Login failed. Please check your credentials.');
+      }
+    } catch (err) {
+      toast.error('An error occurred during login. Please try again.');
+      console.error('Login error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Handle Google login success
   const handleGoogleLoginSuccess = async (credentialResponse) => {
     try {
@@ -100,7 +143,74 @@ const Login = () => {
               />
             </div>
           </div>
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+                Or sign in with email
+              </span>
+            </div>
+          </div>
           
+          <form className="mt-6 space-y-6" onSubmit={handleSubmit}>
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Email Address
+              </label>
+              <div className="mt-1 relative rounded-md shadow-sm">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FiUser className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="appearance-none block w-full pl-10 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  placeholder="admin@blackhays.com"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Password
+              </label>
+              <div className="mt-1 relative rounded-md shadow-sm">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FiLock className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autoComplete="current-password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="appearance-none block w-full pl-10 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  placeholder="admin123"
+                />
+              </div>
+            </div>
+
+            <div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? 'Signing in...' : 'Sign in for testing'}
+              </button>
+            </div>
+          </form>
+
           {/* Error message */}
           {error && (
             <div className="mt-4 bg-red-50 dark:bg-red-900/30 border-l-4 border-red-400 p-4">
@@ -116,6 +226,12 @@ const Login = () => {
               </div>
             </div>
           )}
+          
+          {/* Test admin credentials */}
+          <div className="mt-6 text-sm text-center text-gray-600 dark:text-gray-400">
+            <p className="font-medium">Test Admin Credentials:</p>
+            <p>admin@blackhays.com / admin123</p>
+          </div>
         </div>
       </div>
     </div>
