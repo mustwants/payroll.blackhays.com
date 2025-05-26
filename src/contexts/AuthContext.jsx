@@ -40,9 +40,6 @@ export const AuthProvider = ({ children }) => {
     checkAuth();
   }, []);
 
- // Define allowed domains for Workspace access
-const allowedDomains = ['blackhaysgroup.com'];
-
 // Check if the user's email is from an allowed domain
 const isEmailDomainAllowed = (email) => {
   if (!email) return false;
