@@ -6,6 +6,7 @@ import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 import AdvisorProfile from '../components/AdvisorProfile';
 import { fetchTimeEntries, fetchAdvisorProfile } from '../utils/timeEntries';
+import { exportCSV } from '../utils/exportCSV';
 
 const TeamMemberDetail = () => {
   const { employeeId } = useParams();
@@ -53,17 +54,8 @@ const TeamMemberDetail = () => {
     }
   }, [activeTab, advisorEmail, idToken]);
 
-  const exportCSV = () => {
-    if (timeEntries.length === 0) return;
-    const headers = Object.keys(timeEntries[0]);
-    const rows = timeEntries.map(entry => headers.map(h => entry[h]));
-    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `${advisorEmail}_time_entries.csv`;
-    link.click();
-  };
+  onClick={() => exportCSV(`${advisorEmail}_time_entries.csv`, timeEntries)}
+
 
   return (
     <div className="p-4">
