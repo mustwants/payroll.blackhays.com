@@ -13,11 +13,13 @@ const TeamMemberDetail = () => {
   const navigate = useNavigate();
   const { currentUser, idToken } = useContext(AuthContext);
   const isAdmin = currentUser?.email === 'accounting@blackhaysgroup.com';
-  const advisorEmail = decodeURIComponent(employeeId);
+
+  // Ensure advisor email is valid
+  const advisorEmail = decodeURIComponent(employeeId || '').trim();
 
   const [activeTab, setActiveTab] = useState('google');
   const [timeEntries, setTimeEntries] = useState([]);
-  const [advisorInfo, setAdvisorInfo] = useState(null);
+  const [advisorInfo, setAdvisorInfo] = useState({});
   const [loadingEntries, setLoadingEntries] = useState(true);
   const [loadingProfile, setLoadingProfile] = useState(true);
 
@@ -26,14 +28,15 @@ const TeamMemberDetail = () => {
       setLoadingProfile(true);
       try {
         const data = await fetchAdvisorProfile(advisorEmail, idToken);
-        setAdvisorInfo(data);
+        setAdvisorInfo(data || {});
       } catch (err) {
         console.error('Failed to load advisor profile:', err);
+        setAdvisorInfo({});
       } finally {
         setLoadingProfile(false);
       }
     };
-    loadProfile();
+    if (idToken) loadProfile();
   }, [advisorEmail, idToken]);
 
   useEffect(() => {
@@ -48,14 +51,12 @@ const TeamMemberDetail = () => {
         setLoadingEntries(false);
       }
     };
-
-    if (activeTab === 'times') {
-      loadTimeLogs();
-    }
+    if (activeTab === 'times' && idToken) loadTimeLogs();
   }, [activeTab, advisorEmail, idToken]);
 
-  onClick={() => exportCSV(`${advisorEmail}_time_entries.csv`, timeEntries)}
-
+  const handleExport = () => {
+    exportCSV(`${advisorEmail}_time_entries.csv`, timeEntries);
+  };
 
   return (
     <div className="p-4">
@@ -67,7 +68,7 @@ const TeamMemberDetail = () => {
           Time Entries
         </Button>
         {isAdmin && activeTab === 'times' && (
-          <Button variant="outline" onClick={exportCSV} className="inline-flex items-center">
+          <Button variant="outline" onClick={handleExport} className="inline-flex items-center">
             <FiDownload className="mr-2" /> Export CSV
           </Button>
         )}
@@ -78,7 +79,7 @@ const TeamMemberDetail = () => {
           <div className="p-4">
             {loadingProfile ? (
               <p>Loading...</p>
-            ) : advisorInfo ? (
+            ) : advisorInfo?.Email ? (
               <AdvisorProfile userEmail={advisorInfo.Email} isAdmin={isAdmin} />
             ) : (
               <p>Advisor not found.</p>
