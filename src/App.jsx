@@ -27,9 +27,7 @@ const LoadingFallback = () => (
   </div>
 );
 
-<GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
-  <App />
-</GoogleOAuthProvider>
+
 
 
 // Error boundary component
