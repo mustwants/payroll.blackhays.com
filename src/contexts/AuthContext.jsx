@@ -40,23 +40,22 @@ export const AuthProvider = ({ children }) => {
     checkAuth();
   }, []);
 
-  // Check if email domain is allowed
-  const isEmailDomainAllowed = (email) => {
-    if (!email) return false;
-    
-    // Allow admin@blackhays.com for testing in bolt.new
-    if (email === 'admin@blackhays.com') {
-      return true;
-    }
-    
-    for (const domain of allowedDomains) {
-      if (email.endsWith(`@${domain}`)) {
-        return true;
-      }
-    }
-    
-    return false;
-  };
+ // Define allowed domains for Workspace access
+const allowedDomains = ['blackhaysgroup.com'];
+
+// Check if the user's email is from an allowed domain
+const isEmailDomainAllowed = (email) => {
+  if (!email) return false;
+
+  // Allow test login in dev/test environments
+  if (email === 'admin@blackhays.com') {
+    return true;
+  }
+
+  // Check domain match
+  return allowedDomains.some(domain => email.endsWith(`@${domain}`));
+};
+
 
   // Login function - also support direct login for admin testing
   const login = async (email, password) => {
@@ -71,6 +70,13 @@ export const AuthProvider = ({ children }) => {
       if (!isEmailDomainAllowed(sanitizedEmail)) {
         throw new Error('Login is restricted to BlackHays Group email accounts only');
       }
+
+if (!isEmailDomainAllowed(user.email)) {
+  await supabase.auth.signOut();
+  toast.error('Access restricted to @blackhaysgroup.com');
+  return;
+}
+
       
       // For testing in bolt.new, allow admin@blackhays.com with password admin123
       if (sanitizedEmail === 'admin@blackhays.com' && password === 'admin123') {
