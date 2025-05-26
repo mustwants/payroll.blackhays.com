@@ -71,14 +71,7 @@ const isEmailDomainAllowed = (email) => {
         throw new Error('Login is restricted to BlackHays Group email accounts only');
       }
 
-if (!isEmailDomainAllowed(user.email)) {
-  await supabase.auth.signOut();
-  toast.error('Access restricted to @blackhaysgroup.com');
-  return;
-}
-
-      
-      // For testing in bolt.new, allow admin@blackhays.com with password admin123
+     // For testing in bolt.new, allow admin@blackhays.com with password admin123
       if (sanitizedEmail === 'admin@blackhays.com' && password === 'admin123') {
         const user = {
           id: uuidv4(),
