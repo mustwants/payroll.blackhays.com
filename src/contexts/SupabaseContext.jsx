@@ -29,22 +29,39 @@ export const SupabaseProvider = ({ children }) => {
         setLoading(true);
         setError(null);
         
-        // Check if we can connect to Supabase with a simple health check
-        // Instead of clients table, use a simpler query that's less likely to fail
-        const { data, error } = await supabase.rpc('get_service_status');
+        // Use a simpler health check with timeout to prevent long hanging requests
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
         
-        if (error) {
-          // If RPC doesn't exist, try a basic select as fallback
-          const healthCheck = await supabase.from('company_info').select('id').limit(1);
+        try {
+          // Use a simple ping query to test connection
+          const { data, error: pingError } = await supabase
+            .from('company_info')
+            .select('id')
+            .limit(1)
+            .abortSignal(controller.signal);
           
-          if (healthCheck.error) {
-            throw healthCheck.error;
+          // Clear the timeout since request completed
+          clearTimeout(timeoutId);
+          
+          if (pingError) {
+            throw pingError;
           }
+          
+          setInitialized(true);
+          setRetryCount(0); // Reset retry counter on success
+          console.log('Supabase connection established');
+        } catch (fetchError) {
+          // Clear the timeout if the request failed
+          clearTimeout(timeoutId);
+          
+          // Check if this was a timeout error
+          if (fetchError.name === 'AbortError') {
+            throw new Error('Connection timed out while connecting to Supabase');
+          }
+          
+          throw fetchError;
         }
-        
-        setInitialized(true);
-        setRetryCount(0); // Reset retry counter on success
-        console.log('Supabase connection established');
       } catch (err) {
         console.error('Supabase connection error:', err);
         
@@ -53,15 +70,24 @@ export const SupabaseProvider = ({ children }) => {
         const errorCode = err.code || 'No error code';
         const statusCode = err.status || 'No status code';
         
-        // Provide more detailed error message
-        const detailedError = `Failed to connect to database (Status: ${statusCode}, Code: ${errorCode}): ${errorMessage}. Using local storage as fallback.`;
+        // Check if it's a CORS issue
+        let detailedError = `Failed to connect to database (Status: ${statusCode}, Code: ${errorCode}): ${errorMessage}. Using local storage as fallback.`;
+        
+        if (errorMessage.includes('Failed to fetch') || err.name === 'TypeError') {
+          detailedError = `Network error connecting to Supabase. This could be due to CORS issues, incorrect URL, or Supabase server being unavailable. Using local storage as fallback.`;
+          console.warn('Possible CORS or network connectivity issue detected');
+        }
+        
         setError(detailedError);
         
-        // Retry logic
+        // Retry logic with exponential backoff
         if (retryCount < MAX_RETRIES) {
-          console.log(`Retrying connection (attempt ${retryCount + 1} of ${MAX_RETRIES})...`);
-          setRetryCount(retryCount + 1);
-          // Will retry on next effect cycle
+          const backoffTime = Math.pow(2, retryCount) * 1000; // Exponential backoff: 1s, 2s, 4s
+          console.log(`Retrying connection in ${backoffTime/1000}s (attempt ${retryCount + 1} of ${MAX_RETRIES})...`);
+          
+          setTimeout(() => {
+            setRetryCount(retryCount + 1);
+          }, backoffTime);
         } else {
           console.log('Maximum retry attempts reached. Falling back to local storage.');
           setInitialized(false);
@@ -80,7 +106,12 @@ export const SupabaseProvider = ({ children }) => {
         supabaseKey !== 'placeholder-key') {
       checkConnection();
     } else {
-      console.warn('Supabase credentials missing or invalid.');
+      console.warn('Supabase credentials missing or invalid:', {
+        urlDefined: !!supabaseUrl,
+        keyDefined: !!supabaseKey,
+        urlIsPlaceholder: supabaseUrl === 'https://placeholder.supabase.co',
+        keyIsPlaceholder: supabaseKey === 'placeholder-key'
+      });
       setError('Supabase credentials missing or invalid. Using local storage as fallback.');
       setInitialized(false);
       setLoading(false);
