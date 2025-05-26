@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Suspense, lazy, useContext } from 'react';
-import { AuthContext } from './contexts/AuthContext';
+import { AuthContext, AuthProvider } from './contexts/AuthContext';
 import DashboardLayout from './layouts/DashboardLayout';
 import Login from './pages/Login';
 import PageNotFound from './pages/PageNotFound';
@@ -72,40 +72,42 @@ function App() {
   return (
     <ErrorBoundary>
       <GoogleOAuthProvider clientId={googleClientId}>
-        <Router>
-          <Suspense fallback={<LoadingFallback />}>
-            <Routes>
-              {/* Public routes */}
-              <Route path="/login" element={<Login />} />
-              
-              {/* Protected routes */}
-              <Route 
-                path="/" 
-                element={
-                  <ProtectedRoute>
-                    <DashboardLayout />
-                  </ProtectedRoute>
-                }
-              >
-                <Route index element={<Dashboard />} />
-                <Route path="employees" element={<Employees />} />
-                <Route path="employees/:employeeId" element={<TeamMemberDetail />} />
-                <Route path="clients" element={<Clients />} />
-                <Route path="clients/:clientId" element={<ClientDetail />} />
-                <Route path="task-assignment" element={<TaskAssignment />} />
-                <Route path="company-info" element={<CompanyInfo />} />
-                <Route path="payroll" element={<Payroll />} />
-                <Route path="reports" element={<Reports />} />
-                <Route path="settings" element={<Settings />} />
-                <Route path="time-tracking" element={<TimeTracking />} />
-                <Route path="crm-contacts" element={<CrmContacts />} />
-              </Route>
-              
-              {/* 404 route */}
-              <Route path="*" element={<PageNotFound />} />
-            </Routes>
-          </Suspense>
-        </Router>
+        <AuthProvider>
+          <Router>
+            <Suspense fallback={<LoadingFallback />}>
+              <Routes>
+                {/* Public routes */}
+                <Route path="/login" element={<Login />} />
+                
+                {/* Protected routes */}
+                <Route 
+                  path="/" 
+                  element={
+                    <ProtectedRoute>
+                      <DashboardLayout />
+                    </ProtectedRoute>
+                  }
+                >
+                  <Route index element={<Dashboard />} />
+                  <Route path="employees" element={<Employees />} />
+                  <Route path="employees/:employeeId" element={<TeamMemberDetail />} />
+                  <Route path="clients" element={<Clients />} />
+                  <Route path="clients/:clientId" element={<ClientDetail />} />
+                  <Route path="task-assignment" element={<TaskAssignment />} />
+                  <Route path="company-info" element={<CompanyInfo />} />
+                  <Route path="payroll" element={<Payroll />} />
+                  <Route path="reports" element={<Reports />} />
+                  <Route path="settings" element={<Settings />} />
+                  <Route path="time-tracking" element={<TimeTracking />} />
+                  <Route path="crm-contacts" element={<CrmContacts />} />
+                </Route>
+                
+                {/* 404 route */}
+                <Route path="*" element={<PageNotFound />} />
+              </Routes>
+            </Suspense>
+          </Router>
+        </AuthProvider>
       </GoogleOAuthProvider>
     </ErrorBoundary>
   );
