@@ -13,7 +13,7 @@ export const SupabaseProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [retryCount, setRetryCount] = useState(0);
-  const MAX_RETRIES = 3;
+  const MAX_RETRIES = 5; // Increased from 3 to 5
   
   // Initialize Supabase connection and check status
   useEffect(() => {
@@ -29,17 +29,22 @@ export const SupabaseProvider = ({ children }) => {
         setLoading(true);
         setError(null);
         
-        // Use a simpler health check with timeout to prevent long hanging requests
+        // Use a simpler health check with longer timeout to prevent long hanging requests
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // Increased from 5 to 10 seconds
         
         try {
-          // Use a simple ping query to test connection
-          const { data, error: pingError } = await supabase
-            .from('company_info')
-            .select('id')
-            .limit(1)
-            .abortSignal(controller.signal);
+          // Use a simple ping query to test connection with timeout handling
+          const { data, error: pingError } = await Promise.race([
+            supabase
+              .from('company_info')
+              .select('id')
+              .limit(1)
+              .abortSignal(controller.signal),
+            new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('Connection timed out')), 9500)
+            )
+          ]);
           
           // Clear the timeout since request completed
           clearTimeout(timeoutId);
@@ -50,13 +55,13 @@ export const SupabaseProvider = ({ children }) => {
           
           setInitialized(true);
           setRetryCount(0); // Reset retry counter on success
-          console.log('Supabase connection established');
+          console.log('Supabase connection established successfully');
         } catch (fetchError) {
           // Clear the timeout if the request failed
           clearTimeout(timeoutId);
           
           // Check if this was a timeout error
-          if (fetchError.name === 'AbortError') {
+          if (fetchError.name === 'AbortError' || fetchError.message === 'Connection timed out') {
             throw new Error('Connection timed out while connecting to Supabase');
           }
           
@@ -70,27 +75,37 @@ export const SupabaseProvider = ({ children }) => {
         const errorCode = err.code || 'No error code';
         const statusCode = err.status || 'No status code';
         
-        // Check if it's a CORS issue
+        // Check if it's a CORS issue or network error
         let detailedError = `Failed to connect to database (Status: ${statusCode}, Code: ${errorCode}): ${errorMessage}. Using local storage as fallback.`;
         
         if (errorMessage.includes('Failed to fetch') || err.name === 'TypeError') {
-          detailedError = `Network error connecting to Supabase. This could be due to CORS issues, incorrect URL, or Supabase server being unavailable. Using local storage as fallback.`;
-          console.warn('Possible CORS or network connectivity issue detected');
+          detailedError = `Network error connecting to Supabase. This could be due to CORS issues, incorrect URL, or Supabase server being unavailable. Verify your Supabase configuration and network connection. Using local storage as fallback.`;
+          console.warn('Possible CORS or network connectivity issue detected', err);
         }
         
         setError(detailedError);
         
         // Retry logic with exponential backoff
         if (retryCount < MAX_RETRIES) {
-          const backoffTime = Math.pow(2, retryCount) * 1000; // Exponential backoff: 1s, 2s, 4s
+          const backoffTime = Math.min(Math.pow(2, retryCount) * 1000, 30000); // Exponential backoff: 1s, 2s, 4s, 8s, 16s with max of 30s
           console.log(`Retrying connection in ${backoffTime/1000}s (attempt ${retryCount + 1} of ${MAX_RETRIES})...`);
           
           setTimeout(() => {
-            setRetryCount(retryCount + 1);
+            setRetryCount(prevCount => prevCount + 1);
           }, backoffTime);
         } else {
           console.log('Maximum retry attempts reached. Falling back to local storage.');
           setInitialized(false);
+          
+          // After maximum retries, check if it's a configuration issue
+          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+          const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+          
+          if (!supabaseUrl || !supabaseKey || 
+              supabaseUrl === 'https://placeholder.supabase.co' || 
+              supabaseKey === 'placeholder-key') {
+            setError('Supabase configuration is missing or invalid. Please check your environment variables. Using local storage as fallback.');
+          }
         }
       } finally {
         setLoading(false);
