@@ -1,11 +1,9 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Suspense, lazy, useContext } from 'react';
-import { AuthContext, AuthProvider } from './contexts/AuthContext';
-import { ThemeProvider } from './contexts/ThemeContext';
+import { AuthContext } from './contexts/AuthContext';
 import DashboardLayout from './layouts/DashboardLayout';
 import Login from './pages/Login';
 import PageNotFound from './pages/PageNotFound';
-import { GoogleOAuthProvider } from '@react-oauth/google';
 
 // Lazy load components for better performance
 const Dashboard = lazy(() => import('./pages/Dashboard'));
@@ -27,9 +25,6 @@ const LoadingFallback = () => (
     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
   </div>
 );
-
-
-
 
 // Error boundary component
 const ErrorBoundary = ({ children }) => {
@@ -61,57 +56,49 @@ const ProtectedRoute = ({ children }) => {
   }
   
   if (!currentUser) {
-    return <Navigate to="/login\" replace />;
+    return <Navigate to="/login" replace />;
   }
   
   return children;
 };
 
 function App() {
-  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
-  
   return (
     <ErrorBoundary>
-      <GoogleOAuthProvider clientId={googleClientId}>
-        <ThemeProvider>
-          <AuthProvider>
-            <Router>
-              <Suspense fallback={<LoadingFallback />}>
-                <Routes>
-                  {/* Public routes */}
-                  <Route path="/login" element={<Login />} />
-                  
-                  {/* Protected routes */}
-                  <Route 
-                    path="/" 
-                    element={
-                      <ProtectedRoute>
-                        <DashboardLayout />
-                      </ProtectedRoute>
-                    }
-                  >
-                    <Route index element={<Dashboard />} />
-                    <Route path="employees" element={<Employees />} />
-                    <Route path="employees/:employeeId" element={<TeamMemberDetail />} />
-                    <Route path="clients" element={<Clients />} />
-                    <Route path="clients/:clientId" element={<ClientDetail />} />
-                    <Route path="task-assignment" element={<TaskAssignment />} />
-                    <Route path="company-info" element={<CompanyInfo />} />
-                    <Route path="payroll" element={<Payroll />} />
-                    <Route path="reports" element={<Reports />} />
-                    <Route path="settings" element={<Settings />} />
-                    <Route path="time-tracking" element={<TimeTracking />} />
-                    <Route path="crm-contacts" element={<CrmContacts />} />
-                  </Route>
-                  
-                  {/* 404 route */}
-                  <Route path="*" element={<PageNotFound />} />
-                </Routes>
-              </Suspense>
-            </Router>
-          </AuthProvider>
-        </ThemeProvider>
-      </GoogleOAuthProvider>
+      <Router>
+        <Suspense fallback={<LoadingFallback />}>
+          <Routes>
+            {/* Public routes */}
+            <Route path="/login" element={<Login />} />
+            
+            {/* Protected routes */}
+            <Route 
+              path="/" 
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<Dashboard />} />
+              <Route path="employees" element={<Employees />} />
+              <Route path="employees/:employeeId" element={<TeamMemberDetail />} />
+              <Route path="clients" element={<Clients />} />
+              <Route path="clients/:clientId" element={<ClientDetail />} />
+              <Route path="task-assignment" element={<TaskAssignment />} />
+              <Route path="company-info" element={<CompanyInfo />} />
+              <Route path="payroll" element={<Payroll />} />
+              <Route path="reports" element={<Reports />} />
+              <Route path="settings" element={<Settings />} />
+              <Route path="time-tracking" element={<TimeTracking />} />
+              <Route path="crm-contacts" element={<CrmContacts />} />
+            </Route>
+            
+            {/* 404 route */}
+            <Route path="*" element={<PageNotFound />} />
+          </Routes>
+        </Suspense>
+      </Router>
     </ErrorBoundary>
   );
 }
