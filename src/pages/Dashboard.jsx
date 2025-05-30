@@ -35,100 +35,59 @@ const Dashboard = () => {
 
   // Load data and calculate summaries
   useEffect(() => {
-    const loadTimeEntries = () => {
-      // Load from localStorage based on user role
-      if (userRole === 'admin') {
-        // Admins see all entries
-        const allEntries = JSON.parse(localStorage.getItem('allTimeEntries') || '[]');
-        const currentMonthEntries = allEntries.filter(entry => 
-          entry.date && entry.date.startsWith(currentMonth)
-        );
-        
-        setTimeEntries(currentMonthEntries);
-        
-        // Calculate total hours
-        const hours = currentMonthEntries.reduce((sum, entry) => 
-          sum + (parseFloat(entry.hours) || 0), 0
-        );
-        setTotalHours(hours);
-        
-        // Generate client summary
-        const clients = {};
-        currentMonthEntries.forEach(entry => {
-          if (entry.clientId && entry.clientName && entry.hours) {
-            if (!clients[entry.clientId]) {
-              clients[entry.clientId] = {
-                id: entry.clientId,
-                name: entry.clientName,
-                hours: 0,
-              };
-            }
-            clients[entry.clientId].hours += parseFloat(entry.hours) || 0;
-          }
-        });
-        setClientSummary(Object.values(clients).sort((a, b) => b.hours - a.hours));
-        
-        // Generate team member summary
-        const teamMembers = {};
-        currentMonthEntries.forEach(entry => {
-          if (entry.userId && entry.userName && entry.hours) {
-            if (!teamMembers[entry.userId]) {
-              teamMembers[entry.userId] = {
-                id: entry.userId,
-                name: entry.userName,
-                hours: 0,
-              };
-            }
-            teamMembers[entry.userId].hours += parseFloat(entry.hours) || 0;
-          }
-        });
-        setTeamMemberSummary(Object.values(teamMembers).sort((a, b) => b.hours - a.hours));
-        
-        // Load active team members count
-        const allTeamMembers = JSON.parse(localStorage.getItem('employees') || '[]');
-        setActiveTeamMembers(allTeamMembers.filter(member => member.status === 'active').length);
-        
-        // Load active clients count
-        const allClients = JSON.parse(localStorage.getItem('clients') || '[]');
-        setActiveClients(allClients.filter(client => client.status === 'active').length);
-      } else {
-        // Employees only see their own entries
-        const userEntries = JSON.parse(localStorage.getItem(`timeEntries-${currentUser.id}-${currentMonth}`) || '[]');
-        setTimeEntries(userEntries);
-        
-        // Calculate total hours
-        const hours = userEntries.reduce((sum, entry) => 
-          sum + (parseFloat(entry.hours) || 0), 0
-        );
-        setTotalHours(hours);
-        
-        // Generate client summary for this employee
-        const clients = {};
-        userEntries.forEach(entry => {
-          if (entry.clientId && entry.hours) {
-            const clientName = entry.clientName || 
-              (entry.clientId === '1' ? 'Acme Corporation' :
-              entry.clientId === '2' ? 'Globex Industries' :
-              entry.clientId === '3' ? 'Wayne Enterprises' :
-              entry.clientId === '4' ? 'Stark Industries' :
-              entry.clientId === '5' ? 'Umbrella Corporation' : 'Unknown');
-              
-            if (!clients[entry.clientId]) {
-              clients[entry.clientId] = {
-                id: entry.clientId,
-                name: clientName,
-                hours: 0,
-              };
-            }
-            clients[entry.clientId].hours += parseFloat(entry.hours) || 0;
-          }
-        });
-        setClientSummary(Object.values(clients).sort((a, b) => b.hours - a.hours));
+    const loadTimeEntries = async () => {
+  const allEntries = await fetchTimeEntries();
+  const currentMonthEntries = allEntries.filter(entry => 
+    entry.date && entry.date.startsWith(currentMonth)
+  );
+
+  setTimeEntries(currentMonthEntries);
+
+  // Total hours
+  const hours = currentMonthEntries.reduce((sum, entry) => 
+    sum + (parseFloat(entry.hours) || 0), 0
+  );
+  setTotalHours(hours);
+
+  // Group by client
+  const clients = {};
+  currentMonthEntries.forEach(entry => {
+    if (entry.clientId && entry.clientName && entry.hours) {
+      if (!clients[entry.clientId]) {
+        clients[entry.clientId] = {
+          id: entry.clientId,
+          name: entry.clientName,
+          hours: 0,
+        };
       }
-    };
-    
-    loadTimeEntries();
-  }, [currentUser, userRole, currentMonth]);
+      clients[entry.clientId].hours += parseFloat(entry.hours) || 0;
+    }
+  });
+  setClientSummary(Object.values(clients).sort((a, b) => b.hours - a.hours));
+
+  // Group by team member (admin only)
+  if (userRole === 'admin') {
+    const teamMembers = {};
+    currentMonthEntries.forEach(entry => {
+      if (entry.userId && entry.userName && entry.hours) {
+        if (!teamMembers[entry.userId]) {
+          teamMembers[entry.userId] = {
+            id: entry.userId,
+            name: entry.userName,
+            hours: 0,
+          };
+        }
+        teamMembers[entry.userId].hours += parseFloat(entry.hours) || 0;
+      }
+    });
+    setTeamMemberSummary(Object.values(teamMembers).sort((a, b) => b.hours - a.hours));
+    setActiveTeamMembers(Object.keys(teamMembers).length);
+  }
+
+  // Client count (active per month)
+  setActiveClients(Object.keys(clients).length);
+};
+
   
   // Navigate to the previous month
   const goToPrevMonth = () => {
