@@ -17,7 +17,21 @@ const Dashboard = () => {
   // State for month navigation
   const [currentMonth, setCurrentMonth] = useState(format(new Date(), 'yyyy-MM'));
   const [currentMonthDisplay, setCurrentMonthDisplay] = useState(format(new Date(), 'MMMM yyyy'));
-  
+
+  const fetchTimeEntries = async () => {
+  try {
+    const res = await fetch('https://script.google.com/a/macros/blackhaysgroup.com/s/AKfycbxqN07fYcTqgPT3dPTtEMWbbJS6T87sHTLhQ3M638TfaF4pN0OzQzlg1ZDZyhd-qh2C/exec');
+    if (!res.ok) throw new Error("GAS fetch failed");
+    const data = await res.json();
+    return data;
+  } catch (err) {
+    console.warn("Falling back to Supabase", err);
+    const { data, error } = await supabase.from("time_entries").select("*");
+    if (error) throw error;
+    return data;
+  }
+};
+
   // Load data and calculate summaries
   useEffect(() => {
     const loadTimeEntries = () => {
