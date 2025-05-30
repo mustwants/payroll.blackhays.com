@@ -1,3 +1,4 @@
+import { supabase } from '../contexts/SupabaseContext'; // adjust path if needed
 import { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
 import { FiUser, FiDollarSign, FiClock, FiCalendar, FiBriefcase, FiUsers, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
