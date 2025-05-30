@@ -102,5 +102,6 @@ function App() {
     </ErrorBoundary>
   );
 }
+import TimeEntryForm from './microservices/timeTracking/pages/TimeEntryForm';
 
 export default App;
